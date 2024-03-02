@@ -1,2 +1,18 @@
 # brew-metadata-collector
-Metadata collection of formulae from the HomeBrew core
+Metadata collection of formulae from the [HomeBrew core](https://github.com/Homebrew/homebrew-core).
+
+
+## Configuration
+
+The configuration is done in the `config.json` file. The file contains the following fields:
+   * `output_dir`: The directory where the metadata will be stored.
+   * `core_repo_url`: The URL of the HomeBrew core repository.
+   * `core_repo_branch`: The branch of the HomeBrew core repository.
+   * `clone_repo`: A boolean value indicating whether the HomeBrew core repository should be cloned or not.
+   * `clone_repo_dir`: The directory where the HomeBrew core repository will be cloned.
+
+
+## Export format of the metadata
+
+The extracted metadata is represented in the [pkg-deps-fmt](https://github.com/joseph-grabinger/pkg-deps-fmt) and stored in either a CSV or TSV file.
+
