@@ -1,0 +1,7 @@
+# Application config
+output_dir: ./out
+core_repo:
+  url: https://github.com/Homebrew/homebrew-core
+  branch: master
+  dir: ./
+  clone: true
