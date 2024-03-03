@@ -39,43 +39,45 @@ func (c *Config) Print() {
 
 // Validate validates the configuration and creates directories if needed.
 func (c *Config) Validate() error {
+	// verify the output directory is not empty
+	if c.OutputDir == "" {
+		return ErrEmptyOutputDir
+	}
+
 	// check if the output directory exists
 	s, err := os.Stat(c.OutputDir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			// create the output directory
-			err = os.Mkdir(c.OutputDir, 0755)
-			if err != nil {
-				return err
-			}
+	if err != nil && os.IsNotExist(err) {
+		// create the output directory
+		err = os.Mkdir(c.OutputDir, 0755)
+		if err != nil {
+			return err
 		}
-		return err
-	}
-	if !s.IsDir() {
-		return fmt.Errorf("%s is not a directory", c.OutputDir)
+	} else if !s.IsDir() {
+		return ErrNotADirectory(c.OutputDir)
 	}
 
 	// verify the output directory is empty
 	if empty, err := isEmpty(c.OutputDir); err != nil {
 		return err
 	} else if !empty {
-		return fmt.Errorf("%s is not empty", c.OutputDir)
+		return ErrDirectoryNotEmpty(c.OutputDir)
+	}
+
+	// verify the repository directory is not empty
+	if c.CoreRepo.Dir == "" {
+		return ErrEmptyCoreRepoDir
 	}
 
 	// check if the core repository directory exists
 	s, err = os.Stat(c.CoreRepo.Dir)
-	if err != nil {
-		if os.IsNotExist(err) && c.CoreRepo.Clone {
-			// create the core repository directory
-			err = os.MkdirAll(c.CoreRepo.Dir, 0755)
-			if err != nil {
-				return err
-			}
+	if err != nil && os.IsNotExist(err) && c.CoreRepo.Clone {
+		// create the core repository directory
+		err = os.MkdirAll(c.CoreRepo.Dir, 0755)
+		if err != nil {
+			return err
 		}
-		return err
-	}
-	if !s.IsDir() {
-		return fmt.Errorf("%s is not a directory", c.CoreRepo.Dir)
+	} else if !s.IsDir() {
+		return ErrNotADirectory(c.CoreRepo.Dir)
 	}
 
 	// verify the core repository directory is not empty when the clone option is disabled
@@ -83,18 +85,18 @@ func (c *Config) Validate() error {
 		if empty, err := isEmpty(c.CoreRepo.Dir); err != nil {
 			return err
 		} else if empty {
-			return fmt.Errorf("%s is empty", c.CoreRepo.Dir)
+			return ErrDirectoryIsEmpty(c.CoreRepo.Dir)
 		}
 	}
 
 	// verify the core repository URL is not empty
 	if c.CoreRepo.URL == "" {
-		return fmt.Errorf("the core repository URL is empty")
+		return ErrEmptyCoreRepoURL
 	}
 
 	// verify the core repository branch is not empty
 	if c.CoreRepo.Branch == "" {
-		return fmt.Errorf("the core repository branch is empty")
+		return ErrEmptyCoreRepoBranch
 	}
 
 	return nil
