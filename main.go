@@ -5,11 +5,14 @@ import (
 	"log"
 	"os"
 
+	"main/config"
+
 	git "gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing"
 )
 
 func main() {
-	config, err := NewConfig("config.yml")
+	config, err := config.NewConfig("config.yml")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -22,20 +25,17 @@ func main() {
 	}
 
 	if config.CoreRepo.Clone {
-		// err := os.MkdirAll(config.CoreRepo.Dir, 0755)
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
 		// clone the core repository
 		_, err = git.PlainClone(config.CoreRepo.Dir, false, &git.CloneOptions{
-			URL: config.CoreRepo.URL,
-			//ReferenceName: plumbing.ReferenceName(config.CoreRepo.Branch),
-			Progress: os.Stdout,
+			URL:           config.CoreRepo.URL,
+			ReferenceName: plumbing.ReferenceName("refs/heads/" + config.CoreRepo.Branch),
+			Progress:      os.Stdout,
 		})
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		fmt.Println("Successfully cloned the core repository")
 	}
 
-	fmt.Println("Successfully cloned the core repository")
 }

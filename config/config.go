@@ -1,7 +1,8 @@
-package main
+package config
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -39,15 +40,52 @@ func (c *Config) Print() {
 // Validate validates the configuration and creates directories if needed.
 func (c *Config) Validate() error {
 	// check if the output directory exists
-	if s, err := os.Stat(c.OutputDir); err != nil || s.IsDir() {
-		// create the output directory
-		err = os.Mkdir(c.OutputDir, 0755)
-		if err != nil {
-			return err
+	s, err := os.Stat(c.OutputDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			// create the output directory
+			err = os.Mkdir(c.OutputDir, 0755)
+			if err != nil {
+				return err
+			}
 		}
+		return err
+	}
+	if !s.IsDir() {
+		return fmt.Errorf("%s is not a directory", c.OutputDir)
 	}
 
-	// TODO: add validation of for the core repository directory dependent on clone flag
+	// verify the output directory is empty
+	if empty, err := isEmpty(c.OutputDir); err != nil {
+		return err
+	} else if !empty {
+		return fmt.Errorf("%s is not empty", c.OutputDir)
+	}
+
+	// check if the core repository directory exists
+	s, err = os.Stat(c.CoreRepo.Dir)
+	if err != nil {
+		if os.IsNotExist(err) && c.CoreRepo.Clone {
+			// create the core repository directory
+			err = os.MkdirAll(c.CoreRepo.Dir, 0755)
+			if err != nil {
+				return err
+			}
+		}
+		return err
+	}
+	if !s.IsDir() {
+		return fmt.Errorf("%s is not a directory", c.CoreRepo.Dir)
+	}
+
+	// verify the core repository directory is not empty when the clone option is disabled
+	if !c.CoreRepo.Clone {
+		if empty, err := isEmpty(c.CoreRepo.Dir); err != nil {
+			return err
+		} else if empty {
+			return fmt.Errorf("%s is empty", c.CoreRepo.Dir)
+		}
+	}
 
 	// verify the core repository URL is not empty
 	if c.CoreRepo.URL == "" {
@@ -79,4 +117,19 @@ func NewConfig(configPath string) (*Config, error) {
 	}
 
 	return config, nil
+}
+
+// isEmpty checks if the directory at the given path is empty.
+func isEmpty(path string) (bool, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	_, err = f.Readdirnames(1)
+	if err == io.EOF {
+		return true, nil
+	}
+	return false, err
 }
