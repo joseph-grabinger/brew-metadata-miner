@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"main/config"
+	"main/parser"
 
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
@@ -24,6 +25,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	fmt.Println("Successfully validated the configuration")
+
 	if config.CoreRepo.Clone {
 		// clone the core repository
 		_, err = git.PlainClone(config.CoreRepo.Dir, false, &git.CloneOptions{
@@ -36,6 +39,12 @@ func main() {
 		}
 
 		fmt.Println("Successfully cloned the core repository")
+	}
+
+	parser := parser.NewParser(config)
+
+	if err := parser.Parse(); err != nil {
+		log.Fatal(err)
 	}
 
 }
