@@ -4,4 +4,4 @@ core_repo:
   url: https://github.com/Homebrew/homebrew-core.git
   branch: master
   dir: ./homebrew-core
-  clone: true
+  clone: false
