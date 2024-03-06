@@ -3,12 +3,12 @@ package parser
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"log"
 	"main/config"
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 )
 
 type parser struct {
@@ -54,13 +54,6 @@ func (p *parser) readFormulas() error {
 
 			log.Println("Reading file: ", path)
 
-			// // Read the content of the file.
-			// content, err := os.ReadFile(path)
-			// if err != nil {
-			// 	log.Printf("Error reading file %s: %v\n", path, err)
-			// 	return err
-			// }
-
 			file, err := os.Open(path)
 			if err != nil {
 				log.Printf("Error opening file %s: %v\n", path, err)
@@ -92,34 +85,46 @@ func (p *parser) readFormulas() error {
 func parseFromFile(file *os.File) (*Formula, error) {
 	scanner := bufio.NewScanner(file)
 
-	name, err := parseName(scanner)
+	nameField := &field{name: "name", pattern: `class\s([a-zA-Z0-9]+)\s<\sFormula`}
+	name, err := parseField(scanner, nameField)
 	if err != nil {
 		return nil, err
 	}
 	formula := &Formula{Name: name}
 
-	homepage, err := parseHomepage(scanner)
+	homepageField := &field{name: "homepage", pattern: `homepage\s+"([^"]+)"`}
+	homepage, err := parseField(scanner, homepageField)
 	if err != nil {
 		return nil, err
 	}
 	formula.Homepage = homepage
 
-	url, err := parseURL(scanner)
+	fields := []*field{
+		{
+			name:    "url",
+			pattern: `url\s+"([^"]+)"`,
+		},
+		{
+			name:    "mirror",
+			pattern: `mirror\s+"([^"]+)"`,
+		},
+		{
+			name:    "license",
+			pattern: `license\s+"([^"]+)"`,
+		},
+	}
+	results, err := parseFields(scanner, fields)
 	if err != nil {
+		log.Panicln("Error parsing fields:", err)
 		return nil, err
 	}
-	formula.URL = url
 
-	mirror, err := parseMirror(scanner)
-	if err == nil { // mirror is optional
-		formula.Mirror = mirror
+	formula.URL = results[fields[0]]
+	formula.Mirror = results[fields[1]]
+	formula.License = results[fields[2]]
+	if formula.License == "" {
+		return formula, errors.New("no license found for formula")
 	}
-
-	license, err := parseLicense(scanner)
-	if err != nil {
-		return nil, err
-	}
-	formula.License = license
 
 	if err := scanner.Err(); err != nil {
 		log.Println("Error scanning file:", err)
@@ -129,94 +134,48 @@ func parseFromFile(file *os.File) (*Formula, error) {
 	return formula, nil
 }
 
-// parseName parses the name of a formula through a given scanner.
-func parseName(scanner *bufio.Scanner) (string, error) {
+// parseField parses a specified field from a formula through a given scanner.
+func parseField(scanner *bufio.Scanner, field *field) (string, error) {
 	for scanner.Scan() {
 		line := scanner.Text()
-		log.Println("Line: name: ", line)
+		log.Printf("Line: %s: %s\n", field.name, line)
 
-		if strings.HasPrefix(line, "class") && strings.Contains(line, "< Formula") {
-			parts := strings.Fields(line)
-			if len(parts) < 2 {
-				log.Println("Invalid class line: ", line)
-				return "", ErrInvalidFormula
+		regex := regexp.MustCompile(field.pattern)
+		matches := regex.FindStringSubmatch(line)
+
+		if len(matches) >= 2 {
+			return matches[1], nil
+		}
+	}
+
+	return "", fmt.Errorf("no %s found for formula", field.name)
+}
+
+// parseFields parses a specified list of fields from a formula through a given scanner.
+func parseFields(scanner *bufio.Scanner, fields []*field) (map[*field]string, error) {
+	results := make(map[*field]string)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		log.Println("Line: <generic>: ", line)
+
+		for _, f := range fields {
+			pattern := f.pattern
+			regex := regexp.MustCompile(pattern)
+			matches := regex.FindStringSubmatch(line)
+
+			if len(matches) >= 2 {
+				results[f] = matches[1]
+				log.Println("Matched: ", results[f])
+				break
 			}
-
-			return parts[1], nil
 		}
 	}
 
-	return "", errors.New("no name found for formula")
+	return results, nil
 }
 
-// parsehomepage parses the homepage of a formula through a given scanner.
-func parseHomepage(scanner *bufio.Scanner) (string, error) {
-	for scanner.Scan() {
-		line := scanner.Text()
-		log.Println("Line: homepage: ", line)
-
-		pattern := `homepage\s+"([^"]+)"`
-		regex := regexp.MustCompile(pattern)
-		matches := regex.FindStringSubmatch(line)
-
-		if len(matches) >= 2 {
-			return matches[1], nil
-		}
-	}
-
-	return "", errors.New("no homepage found for formula")
-}
-
-// parseURL parses the URL of a formula through a given scanner.
-func parseURL(scanner *bufio.Scanner) (string, error) {
-	for scanner.Scan() {
-		line := scanner.Text()
-		log.Println("Line: url: ", line)
-
-		pattern := `url\s+"([^"]+)"`
-		regex := regexp.MustCompile(pattern)
-		matches := regex.FindStringSubmatch(line)
-
-		if len(matches) >= 2 {
-			return matches[1], nil
-		}
-	}
-
-	return "", errors.New("no url found for formula")
-}
-
-// parseMirror parses the mirror of a formula through a given scanner.
-func parseMirror(scanner *bufio.Scanner) (string, error) {
-	for scanner.Scan() {
-		line := scanner.Text()
-		log.Println("Line: mirror: ", line)
-
-		pattern := `mirror\s+"([^"]+)"`
-		regex := regexp.MustCompile(pattern)
-		matches := regex.FindStringSubmatch(line)
-
-		if len(matches) >= 2 {
-			return matches[1], nil
-		}
-	}
-
-	return "", errors.New("no mirror found for formula")
-}
-
-// parseLicense parses the license of a formula through a given scanner.
-func parseLicense(scanner *bufio.Scanner) (string, error) {
-	for scanner.Scan() {
-		line := scanner.Text()
-		log.Println("Line: license: ", line)
-
-		pattern := `license\s+"([^"]+)"`
-		regex := regexp.MustCompile(pattern)
-		matches := regex.FindStringSubmatch(line)
-
-		if len(matches) >= 2 {
-			return matches[1], nil
-		}
-	}
-
-	return "", errors.New("no license found for formula")
+type field struct {
+	name    string
+	pattern string
 }
