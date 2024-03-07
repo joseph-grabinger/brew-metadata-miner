@@ -1,4 +1,4 @@
-package parser
+package types
 
 // TODO: Use the following representtion once the relevant meta data is stripped.
 // Formula represents a formula from the brew package manager.
