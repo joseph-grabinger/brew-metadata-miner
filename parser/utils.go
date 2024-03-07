@@ -7,16 +7,13 @@ import (
 
 // cleanLicenseSequence returns a cleaned string from a sequence.
 func cleanLicenseSequence(sequence []string) string {
-	for i, line := range sequence {
+	for i := range sequence {
 		// Remove comments.
 		regex := regexp.MustCompile(`#.*$`)
-		sequence[i] = regex.ReplaceAllString(line, "")
-		// Remove whitespace.
-		sequence[i] = strings.ReplaceAll(line, " ", "")
-		// Remove tabs.
-		sequence[i] = strings.ReplaceAll(line, "\t", "")
-		// sequence[i] = strings.TrimSpace(line)
-	} // TODO: Rework this.
+		sequence[i] = regex.ReplaceAllString(sequence[i], "")
+		// Remove whitespace, tabs, and newlines.
+		sequence[i] = strings.TrimSpace(sequence[i])
+	}
 	return strings.Join(sequence, "")
 }
 
