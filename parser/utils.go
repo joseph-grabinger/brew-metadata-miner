@@ -7,6 +7,9 @@ import (
 
 // cleanLicenseSequence returns a cleaned string from a sequence.
 func cleanLicenseSequence(sequence []string) string {
+	// Remove leading license keyword.
+	regex := regexp.MustCompile(`\s*license\s*`)
+	sequence[0] = regex.ReplaceAllString(sequence[0], "")
 	for i := range sequence {
 		// Remove comments.
 		regex := regexp.MustCompile(`#.*$`)
