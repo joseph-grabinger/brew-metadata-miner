@@ -36,9 +36,6 @@ type Formula struct {
 	// List of the formula's dependencies.
 	Dependencies []*Dependency
 
-	// Archive of the formula.
-	Archive *Archive
-
 	// Head of the formula.
 	Head *Head
 }
@@ -50,15 +47,6 @@ type Dependency struct {
 
 	// Type of the dependency.
 	Type string
-}
-
-// Archive represents a stable archive of a formula.
-type Archive struct {
-	// URL of the archive.
-	URL string
-
-	// Tag of the archive.
-	Tag string
 }
 
 // Head represents the head of a formula.
