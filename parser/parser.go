@@ -102,6 +102,7 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 		delegate.NewSLF("url", `url\s+"([^"]+)"`, delegate.NewSLS(*formulaParser)),
 		delegate.NewSLF("mirror", `mirror\s+"([^"]+)"`, delegate.NewSLS(*formulaParser)),
 		delegate.NewMLF("license", `license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|"[^"]+")`, delegate.NewMLS(*formulaParser), isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence),
+		delegate.NewSLMF("head", `\s*head\s+"([^"]+)"`, delegate.NewSLMS(*formulaParser), []string{`using:\s*:(\w+)`}),
 	}
 
 	results, err := formulaParser.ParseFields(fields)
@@ -110,11 +111,24 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 		return nil, err
 	}
 
-	formula.URL = results[fields[0]]
-	formula.Mirror = results[fields[1]]
-	formula.License = results[fields[2]]
-	if formula.License == "" {
-		formula.License = "pseudo"
+	formula.URL = results[fields[0]].(string)
+	if results[fields[1]] != nil {
+		formula.Mirror = results[fields[1]].(string)
+	}
+	if results[fields[2]] != nil {
+		formula.License = results[fields[2]].(string)
+		if formula.License == "" {
+			formula.License = "pseudo"
+		}
+	}
+
+	if results[fields[3]] != nil {
+		head := results[fields[3]].([]string)
+		if len(head) > 1 {
+			formula.Head = &types.Head{URL: head[0], VCS: head[1]}
+		} else {
+			formula.Head = &types.Head{URL: head[0]}
+		}
 	}
 
 	if err := scanner.Err(); err != nil {

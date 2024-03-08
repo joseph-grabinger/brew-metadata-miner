@@ -15,8 +15,8 @@ type FormulaParser struct {
 
 // ParseFields parses the provided fields from a file.
 // It returns a map of fields to their values.
-func (fp *FormulaParser) ParseFields(fields []Field) (map[Field]string, error) {
-	results := make(map[Field]string)
+func (fp *FormulaParser) ParseFields(fields []Field) (map[Field]interface{}, error) {
+	results := make(map[Field]interface{})
 
 	for fp.Scanner.Scan() {
 		line := fp.Scanner.Text()

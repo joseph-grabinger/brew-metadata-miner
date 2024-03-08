@@ -9,7 +9,7 @@ import (
 // parseStrategy is the strategy interface.
 type parseStrategy interface {
 	matchesField(field Field, line string) bool
-	extractField(field Field, line string) (string, error)
+	extractField(field Field, line string) (interface{}, error)
 }
 
 // SingleLineStrategy is a concrete strategy.
@@ -41,7 +41,7 @@ func (sls *SingleLineStrategy) matchesField(field Field, line string) bool {
 
 // extractField returns the previously matched field.
 // matchesField has to be called first.
-func (sls *SingleLineStrategy) extractField(field Field, line string) (string, error) {
+func (sls *SingleLineStrategy) extractField(field Field, line string) (interface{}, error) {
 	return sls.matches[1], nil
 }
 
@@ -87,7 +87,7 @@ func (mls *MultiLineStrategy) matchesField(field Field, line string) bool {
 // extractField returns the previously matched field if the sequence has been opened.
 // If the sequence has been opened, it returns the entire multi-line sequence.
 // matchesField has to be called first.
-func (mls *MultiLineStrategy) extractField(field Field, line string) (string, error) {
+func (mls *MultiLineStrategy) extractField(field Field, line string) (interface{}, error) {
 	// A not open sequence means the field's default pattern has been matched.
 	// Thus, the field can be extracted from a single line.
 	if !mls.opened {
@@ -112,4 +112,52 @@ func (mls *MultiLineStrategy) extractField(field Field, line string) (string, er
 	log.Println("Current matches: ", mls.matches)
 
 	return "", fmt.Errorf("no %s found for formula", field.GetName())
+}
+
+// SameLineMultiStrategy is a concrete strategy.
+type SameLineMultiStrategy struct {
+	SingleLineStrategy
+	line string
+}
+
+// NewSLMS returns a pointer to a new instance of SameLineMultiStrategy.
+func NewSLMS(fp FormulaParser) *SameLineMultiStrategy {
+	return &SameLineMultiStrategy{
+		SingleLineStrategy: *NewSLS(fp),
+	}
+}
+
+// matchesField checks if a given field's pattern matches a line.
+func (slms *SameLineMultiStrategy) matchesField(field Field, line string) bool {
+	match := slms.SingleLineStrategy.matchesField(field, line)
+	if match {
+		slms.line = line
+	}
+	return match
+}
+
+// extractField returns the previously matched field.
+// matchesField has to be called first.
+func (slms *SameLineMultiStrategy) extractField(field Field, line string) (interface{}, error) {
+	singleMatch, error := slms.SingleLineStrategy.extractField(field, slms.line)
+	if error != nil {
+		return "", error
+	}
+
+	res := []string{singleMatch.(string)}
+
+	// Check additional patterns.
+	patterns := field.(*sameLineMultiField).additionalPatterns
+	if len(patterns) > 0 {
+		for _, pattern := range patterns {
+			regex := regexp.MustCompile(pattern)
+			matches := regex.FindStringSubmatch(slms.line)
+
+			if len(matches) >= 2 {
+				res = append(res, matches[1])
+			}
+		}
+	}
+
+	return res, nil
 }

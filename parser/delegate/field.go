@@ -66,3 +66,30 @@ func (mlf multiLineField) GetPattern() string {
 func (mlf multiLineField) GetStrat() parseStrategy {
 	return mlf.Field.GetStrat()
 }
+
+// NewSLMF returns a pointer to a new instance of sameLineMultiField.
+func NewSLMF(name string, pattern string, strat parseStrategy, additionalPatterns []string) *sameLineMultiField {
+	return &sameLineMultiField{
+		Field:              NewSLF(name, pattern, strat),
+		additionalPatterns: additionalPatterns,
+	}
+}
+
+// sameLineMultiField acts as a decorator.
+// It embeds the Field interface and adds additional functionality.
+type sameLineMultiField struct {
+	Field
+	additionalPatterns []string
+}
+
+func (slmf sameLineMultiField) GetName() string {
+	return slmf.Field.GetName()
+}
+
+func (slmf sameLineMultiField) GetPattern() string {
+	return slmf.Field.GetPattern()
+}
+
+func (slmf sameLineMultiField) GetStrat() parseStrategy {
+	return slmf.Field.GetStrat()
+}
