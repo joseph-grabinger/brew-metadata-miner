@@ -14,28 +14,27 @@ type FormulaParser struct {
 }
 
 // ParseFields parses the provided fields from a file.
-// It returns a map of fields to their values.
-func (fp *FormulaParser) ParseFields(fields []Field) (map[Field]interface{}, error) {
-	results := make(map[Field]interface{})
+// It returns a map of field names to their values.
+func (fp *FormulaParser) ParseFields(fields []ParseStrategy) (map[string]interface{}, error) {
+	results := make(map[string]interface{})
 
 	for fp.Scanner.Scan() {
 		line := fp.Scanner.Text()
 
 		for _, f := range fields {
 			// Skip field if it has already been matched.
-			if _, ok := results[f]; ok {
+			if _, ok := results[f.GetName()]; ok {
 				continue
 			}
 
 			log.Printf("Line: <generic:%s>: %s\n", f.GetName(), line)
-			strat := f.GetStrat()
-			if strat.matchesField(f, line) {
-				fieldValue, err := strat.extractField(f, line)
+			if f.matchesLine(line) {
+				fieldValue, err := f.extractFromLine(line)
 				if err != nil {
 					return nil, err
 				}
-				results[f] = fieldValue
-				log.Println("Matched: ", results[f])
+				results[f.GetName()] = fieldValue
+				log.Println("Matched: ", results[f.GetName()])
 				break
 			}
 		}

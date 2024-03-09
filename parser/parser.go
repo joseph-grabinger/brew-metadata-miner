@@ -98,12 +98,12 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 	}
 	formula.Homepage = homepage
 
-	fields := []delegate.Field{
-		delegate.NewSLF("url", `url\s+"([^"]+)"`, delegate.NewSLS(*formulaParser)),
-		delegate.NewSLF("mirror", `mirror\s+"([^"]+)"`, delegate.NewSLS(*formulaParser)),
-		delegate.NewMLF("license", `license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|"[^"]+")`, delegate.NewMLS(*formulaParser), isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence),
-		delegate.NewSLMF("head", `\s*head\s+"([^"]+)"`, delegate.NewSLMS(*formulaParser), []string{`using:\s*:(\w+)`}),
-		delegate.NewMLF("dependency", `^(\s{2}|\t)depends_on\s+"[^"]+"`, delegate.NewMLS(*formulaParser), isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence),
+	fields := []delegate.ParseStrategy{
+		delegate.NewSLF("url", `url\s+"([^"]+)"`, *formulaParser),
+		delegate.NewSLF("mirror", `mirror\s+"([^"]+)"`, *formulaParser),
+		delegate.NewMLF("license", `license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|"[^"]+")`, *formulaParser, isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence),
+		delegate.NNewSLMF("head", `\s*head\s+"([^"]+)"`, *formulaParser, []string{`using:\s*:(\w+)`}),
+		delegate.NewMLF("dependency", `^(\s{2}|\t)depends_on\s+"[^"]+"`, *formulaParser, isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence),
 	}
 
 	results, err := formulaParser.ParseFields(fields)
@@ -112,19 +112,19 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 		return nil, err
 	}
 
-	formula.URL = results[fields[0]].(string)
-	if results[fields[1]] != nil {
-		formula.Mirror = results[fields[1]].(string)
+	formula.URL = results["url"].(string)
+	if results["mirror"] != nil {
+		formula.Mirror = results["mirror"].(string)
 	}
-	if results[fields[2]] != nil {
-		formula.License = results[fields[2]].(string)
+	if results["license"] != nil {
+		formula.License = results["license"].(string)
 		if formula.License == "" {
 			formula.License = "pseudo"
 		}
 	}
 
-	if results[fields[3]] != nil {
-		head := results[fields[3]].([]string)
+	if results["head"] != nil {
+		head := results["head"].([]string)
 		if len(head) > 1 {
 			formula.Head = &types.Head{URL: head[0], VCS: head[1]}
 		} else {
@@ -133,8 +133,8 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 	}
 
 	dependencies := make([]*types.Dependency, 0)
-	if results[fields[4]] != nil {
-		for _, dep := range results[fields[4]].([][]string) {
+	if results["dependency"] != nil {
+		for _, dep := range results["dependency"].([][]string) {
 			dependency := &types.Dependency{Name: dep[0]}
 			if len(dep) > 1 {
 				dependency.Type = dep[1]
