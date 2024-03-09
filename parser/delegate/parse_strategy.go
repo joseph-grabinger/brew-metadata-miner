@@ -47,18 +47,15 @@ func (sls *SingleLineStrategy) extractField(field Field, line string) (interface
 
 // MultiLineStrategy is a concrete strategy.
 type MultiLineStrategy struct {
-	// FormulaParser is the context.
-	FormulaParser
-	matches []string
-	opened  bool
+	SingleLineStrategy
+	opened bool
 }
 
 // NewMLS returns a pointer to a new instance of MultiLineStrategy.
 func NewMLS(fp FormulaParser) *MultiLineStrategy {
 	return &MultiLineStrategy{
-		FormulaParser: fp,
-		matches:       make([]string, 0),
-		opened:        false,
+		SingleLineStrategy: *NewSLS(fp),
+		opened:             false,
 	}
 }
 
