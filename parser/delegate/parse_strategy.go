@@ -101,15 +101,12 @@ func (mls *MultiLineStrategy) extractField(field Field, line string) (interface{
 		if field.(*multiLineField).isEndSequence(line) {
 			mls.matches = append(mls.matches, line)
 			cleaned := field.(*multiLineField).cleanSequence(mls.matches)
-			log.Println("MULTIMATCH: ", cleaned)
 			return cleaned, nil
 		}
 
 		// Append line to matches since the sequence has been opened.
 		mls.matches = append(mls.matches, line)
 	}
-
-	log.Println("Current matches: ", mls.matches)
 
 	return "", fmt.Errorf("no %s found for formula", field.GetName())
 }

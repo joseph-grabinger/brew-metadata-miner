@@ -37,7 +37,7 @@ func (slf singleLineField) GetStrat() parseStrategy {
 }
 
 // NewMLF returns a pointer to a new instance of multiLineField.
-func NewMLF(name string, pattern string, strat parseStrategy, isBeginSeq func(line string) bool, isEndSeq func(line string) bool, clean func([]string) string) *multiLineField {
+func NewMLF(name string, pattern string, strat parseStrategy, isBeginSeq func(line string) bool, isEndSeq func(line string) bool, clean func([]string) interface{}) *multiLineField {
 	return &multiLineField{
 		Field:           NewSLF(name, pattern, strat),
 		isBeginSequence: isBeginSeq,
@@ -52,7 +52,7 @@ type multiLineField struct {
 	Field
 	isBeginSequence func(line string) bool
 	isEndSequence   func(line string) bool
-	cleanSequence   func(sequence []string) string
+	cleanSequence   func(sequence []string) interface{}
 }
 
 func (mlf multiLineField) GetName() string {

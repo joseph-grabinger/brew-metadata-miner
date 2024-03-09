@@ -103,6 +103,7 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 		delegate.NewSLF("mirror", `mirror\s+"([^"]+)"`, delegate.NewSLS(*formulaParser)),
 		delegate.NewMLF("license", `license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|"[^"]+")`, delegate.NewMLS(*formulaParser), isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence),
 		delegate.NewSLMF("head", `\s*head\s+"([^"]+)"`, delegate.NewSLMS(*formulaParser), []string{`using:\s*:(\w+)`}),
+		delegate.NewMLF("dependency", `^(\s{2}|\t)depends_on\s+"[^"]+"`, delegate.NewMLS(*formulaParser), isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence),
 	}
 
 	results, err := formulaParser.ParseFields(fields)
@@ -130,6 +131,18 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 			formula.Head = &types.Head{URL: head[0]}
 		}
 	}
+
+	dependencies := make([]*types.Dependency, 0)
+	if results[fields[4]] != nil {
+		for _, dep := range results[fields[4]].([][]string) {
+			dependency := &types.Dependency{Name: dep[0]}
+			if len(dep) > 1 {
+				dependency.Type = dep[1]
+			}
+			dependencies = append(dependencies, dependency)
+		}
+	}
+	formula.Dependencies = dependencies
 
 	if err := scanner.Err(); err != nil {
 		log.Println("Error scanning file:", err)
