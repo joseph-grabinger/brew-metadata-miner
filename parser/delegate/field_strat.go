@@ -129,7 +129,7 @@ type sameLineMultiField struct {
 }
 
 // NewSLMF returns a pointer to a new instance of sameLineMultiField.
-func NNewSLMF(name string, pattern string, fp FormulaParser, additionalPatterns []string) *sameLineMultiField {
+func NewSLMF(name string, pattern string, fp FormulaParser, additionalPatterns []string) *sameLineMultiField {
 	return &sameLineMultiField{
 		singleLineField:    *NewSLF(name, pattern, fp),
 		additionalPatterns: additionalPatterns,

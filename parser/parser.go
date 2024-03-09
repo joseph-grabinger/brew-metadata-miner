@@ -102,7 +102,7 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 		delegate.NewSLF("url", `url\s+"([^"]+)"`, *formulaParser),
 		delegate.NewSLF("mirror", `mirror\s+"([^"]+)"`, *formulaParser),
 		delegate.NewMLF("license", `license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|"[^"]+")`, *formulaParser, isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence),
-		delegate.NNewSLMF("head", `\s*head\s+"([^"]+)"`, *formulaParser, []string{`using:\s*:(\w+)`}),
+		delegate.NewSLMF("head", `\s*head\s+"([^"]+)"`, *formulaParser, []string{`using:\s*:(\w+)`}),
 		delegate.NewMLF("dependency", `^(\s{2}|\t)depends_on\s+"[^"]+"`, *formulaParser, isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence),
 	}
 
