@@ -3,7 +3,6 @@ package delegate
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"regexp"
 )
 
@@ -27,14 +26,14 @@ func (fp *FormulaParser) ParseFields(fields []ParseStrategy) (map[string]interfa
 				continue
 			}
 
-			log.Printf("Line: <generic:%s>: %s\n", f.getName(), line)
+			// log.Printf("Line: <generic:%s>: %s\n", f.getName(), line)
 			if f.matchesLine(line) {
 				fieldValue, err := f.extractFromLine(line)
 				if err != nil {
 					return nil, err
 				}
 				results[f.getName()] = fieldValue
-				log.Println("Matched: ", results[f.getName()])
+				// log.Println("Matched: ", results[f.getName()])
 				break
 			}
 		}
@@ -48,7 +47,7 @@ func (fp *FormulaParser) ParseFields(fields []ParseStrategy) (map[string]interfa
 func (fp *FormulaParser) ParseField(pattern, name string) (string, error) {
 	for fp.Scanner.Scan() {
 		line := fp.Scanner.Text()
-		log.Printf("Line: %s: %s\n", name, line)
+		// log.Printf("Line: %s: %s\n", name, line)
 
 		regex := regexp.MustCompile(pattern)
 		matches := regex.FindStringSubmatch(line)

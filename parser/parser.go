@@ -56,7 +56,6 @@ func (p *parser) readFormulas() error {
 
 			file, err := os.Open(path)
 			if err != nil {
-				log.Printf("Error opening file %s: %v\n", path, err)
 				return err
 			}
 			defer file.Close()
@@ -145,7 +144,6 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 	formula.Dependencies = dependencies
 
 	if err := scanner.Err(); err != nil {
-		log.Println("Error scanning file:", err)
 		return nil, err
 	}
 

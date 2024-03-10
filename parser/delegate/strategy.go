@@ -2,7 +2,6 @@ package delegate
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 )
 
@@ -133,7 +132,7 @@ func (f *multiLineMatcher) extractFromLine(line string) (interface{}, error) {
 
 	for f.FormulaParser.Scanner.Scan() {
 		line := f.FormulaParser.Scanner.Text()
-		log.Println("Line: <genericMLS>: ", line)
+		// log.Println("Line: <genericMLS>: ", line)
 
 		if f.isEndSequence(line) {
 			f.matches = append(f.matches, line)
