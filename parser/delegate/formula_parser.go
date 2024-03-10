@@ -23,18 +23,18 @@ func (fp *FormulaParser) ParseFields(fields []ParseStrategy) (map[string]interfa
 
 		for _, f := range fields {
 			// Skip field if it has already been matched.
-			if _, ok := results[f.GetName()]; ok {
+			if _, ok := results[f.getName()]; ok {
 				continue
 			}
 
-			log.Printf("Line: <generic:%s>: %s\n", f.GetName(), line)
+			log.Printf("Line: <generic:%s>: %s\n", f.getName(), line)
 			if f.matchesLine(line) {
 				fieldValue, err := f.extractFromLine(line)
 				if err != nil {
 					return nil, err
 				}
-				results[f.GetName()] = fieldValue
-				log.Println("Matched: ", results[f.GetName()])
+				results[f.getName()] = fieldValue
+				log.Println("Matched: ", results[f.getName()])
 				break
 			}
 		}

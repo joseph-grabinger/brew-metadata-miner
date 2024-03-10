@@ -99,11 +99,11 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 	formula.Homepage = homepage
 
 	fields := []delegate.ParseStrategy{
-		delegate.NewSLF("url", `url\s+"([^"]+)"`, *formulaParser),
-		delegate.NewSLF("mirror", `mirror\s+"([^"]+)"`, *formulaParser),
-		delegate.NewMLF("license", `license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|"[^"]+")`, *formulaParser, isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence),
-		delegate.NewSLMF("head", `\s*head\s+"([^"]+)"`, *formulaParser, []string{`using:\s*:(\w+)`}),
-		delegate.NewMLF("dependency", `^(\s{2}|\t)depends_on\s+"[^"]+"`, *formulaParser, isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence),
+		delegate.NewSLM("url", `url\s+"([^"]+)"`, *formulaParser),
+		delegate.NewSLM("mirror", `mirror\s+"([^"]+)"`, *formulaParser),
+		delegate.NewMLM("license", `license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|"[^"]+")`, *formulaParser, isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence),
+		delegate.NewSLMM("head", `\s*head\s+"([^"]+)"`, *formulaParser, []string{`using:\s*:(\w+)`}),
+		delegate.NewMLM("dependency", `^(\s{2}|\t)depends_on\s+"[^"]+"`, *formulaParser, isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence),
 	}
 
 	results, err := formulaParser.ParseFields(fields)
