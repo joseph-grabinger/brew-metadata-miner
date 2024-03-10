@@ -86,24 +86,24 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 	scanner := bufio.NewScanner(file)
 	formulaParser := &delegate.FormulaParser{Scanner: scanner}
 
-	name, err := formulaParser.ParseField(`class\s([a-zA-Z0-9]+)\s<\sFormula`, "name")
+	name, err := formulaParser.ParseField(namePattern, "name")
 	if err != nil {
 		return nil, err
 	}
 	formula := &types.Formula{Name: name}
 
-	homepage, err := formulaParser.ParseField(`homepage\s+"([^"]+)"`, "homepage")
+	homepage, err := formulaParser.ParseField(homepagePattern, "homepage")
 	if err != nil {
 		return nil, err
 	}
 	formula.Homepage = homepage
 
 	fields := []delegate.ParseStrategy{
-		delegate.NewSLM("url", `url\s+"([^"]+)"`, *formulaParser),
-		delegate.NewSLM("mirror", `mirror\s+"([^"]+)"`, *formulaParser),
-		delegate.NewMLM("license", `license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|"[^"]+")`, *formulaParser, isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence),
-		delegate.NewSLMM("head", `\s*head\s+"([^"]+)"`, *formulaParser, []string{`using:\s*:(\w+)`}),
-		delegate.NewMLM("dependency", `^(\s{2}|\t)depends_on\s+"[^"]+"`, *formulaParser, isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence),
+		delegate.NewSLM("url", urlPattern, *formulaParser),
+		delegate.NewSLM("mirror", mirrorPattern, *formulaParser),
+		delegate.NewMLM("license", licensePattern, *formulaParser, isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence),
+		delegate.NewSLMM("head", headURLPattern, *formulaParser, []string{headVCSPattern}),
+		delegate.NewMLM("dependency", dependencyPattern, *formulaParser, isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence),
 	}
 
 	results, err := formulaParser.ParseFields(fields)
