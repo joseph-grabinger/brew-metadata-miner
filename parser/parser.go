@@ -14,14 +14,14 @@ type parser struct {
 	config *config.Config
 
 	// A map of formulas, where the key is the name of the formula.
-	formulas map[string]*sourceFormula
+	formulas map[string]*formula
 }
 
 // NewParser creates a new parser.
 func NewParser(config *config.Config) *parser {
 	return &parser{
 		config:   config,
-		formulas: make(map[string]*sourceFormula),
+		formulas: make(map[string]*formula),
 	}
 }
 
@@ -59,11 +59,13 @@ func (p *parser) readFormulas() error {
 			defer file.Close()
 
 			// Parse Formula from file.
-			formula, err := parseFromFile(file)
+			sourceFormula, err := parseFromFile(file)
 			if err != nil {
 				log.Printf("Error parsing file %s: %v\n", path, err)
 				return err
 			}
+
+			formula := fromSourceFormula(sourceFormula)
 
 			// Add the formula to the formulas map.
 			p.formulas[formula.name] = formula

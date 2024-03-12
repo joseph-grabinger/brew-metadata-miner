@@ -21,6 +21,33 @@ func (f *formula) String() string {
 	return fmt.Sprintf("%s\nRepo: %s\nLicense: %s\nDependencies: %v\n", f.name, f.repoURL, f.license, f.dependencies)
 }
 
+// fromSourceFormula creates a formula from a source formula and evaluates the reopURL.
+// It returns a pointer to the newly created formula.
+func fromSourceFormula(sf *sourceFormula) *formula {
+	f := &formula{
+		name:         sf.name,
+		license:      sf.license,
+		dependencies: sf.dependencies,
+	}
+
+	if f.license == "" {
+		f.license = "pseudo"
+	}
+
+	if sf.head != nil {
+		f.repoURL = sf.head.url
+	} else if sf.url != "" {
+		f.repoURL = sf.url
+	} else if sf.mirror != "" {
+		f.repoURL = sf.mirror
+	} else {
+		// use homepage as fallback.
+		f.repoURL = sf.homepage
+	}
+
+	return f
+}
+
 // sourceFormula represents a formula as found in the formula file.
 type sourceFormula struct {
 	// name of the formula.
