@@ -2,72 +2,75 @@ package parser
 
 import "fmt"
 
-// TODO: Use the following representtion once the relevant meta data is stripped.
-// Formula represents a formula from the brew package manager.
-// type Formula struct {
-// 	// Name of the formula.
-// 	Name string
+// formula represents a formula from the brew package manager.
+type formula struct {
+	// name of the formula.
+	name string
 
-// 	// Repository URL of the formula.
-// 	RepoURL string
+	// Repository URL of the formula.
+	repoURL string
 
-// 	// License of the formula.
-// 	License string
+	// license of the formula.
+	license string
 
-// 	// A list of the formula's dependencies.
-// 	Dependencies []*Dependency
-// }
+	// A list of the formula's dependencies.
+	dependencies []*dependency
+}
 
-// Formula represents a formula from the brew package manager.
-type Formula struct {
-	// Name of the formula.
-	Name string
+func (f *formula) String() string {
+	return fmt.Sprintf("%s\nRepo: %s\nLicense: %s\nDependencies: %v\n", f.name, f.repoURL, f.license, f.dependencies)
+}
 
-	// Homepage of the formula.
-	Homepage string
+// sourceFormula represents a formula as found in the formula file.
+type sourceFormula struct {
+	// name of the formula.
+	name string
 
-	// URL of the formula.
-	URL string
+	// homepage of the formula.
+	homepage string
 
-	// Mirror of the formula.
-	Mirror string
+	// url of the formula.
+	url string
 
-	// License of the formula.
-	License string
+	// mirror of the formula.
+	mirror string
+
+	// license of the formula.
+	license string
 
 	// List of the formula's dependencies.
-	Dependencies []*Dependency
+	dependencies []*dependency
 
-	// Head of the formula.
-	Head *Head
+	// head of the formula.
+	head *head
 }
 
-func (f *Formula) String() string {
-	return fmt.Sprintf("%s\nHomepage: %s\nURL: %s\nMirror: %s\nLicense: %s\nDependencies: %v\nHead: %v\n", f.Name, f.Homepage, f.URL, f.Mirror, f.License, f.Dependencies, f.Head)
+func (f *sourceFormula) String() string {
+	return fmt.Sprintf("%s\nHomepage: %s\nURL: %s\nMirror: %s\nLicense: %s\nDependencies: %v\nHead: %v\n", f.name, f.homepage, f.url, f.mirror, f.license, f.dependencies, f.head)
 }
 
-// Dependency represents a dependency of a formula.
-type Dependency struct {
-	// Name of the dependency.
-	Name string
+// dependency represents a dependency of a formula.
+type dependency struct {
+	// name of the dependency.
+	name string
 
-	// Type of the dependency.
-	Type string
+	// depType is the type of the dependency.
+	depType string
 }
 
-func (d *Dependency) String() string {
-	return fmt.Sprintf("{%s %s}", d.Name, d.Type)
+func (d *dependency) String() string {
+	return fmt.Sprintf("{%s %s}", d.name, d.depType)
 }
 
-// Head represents the head of a formula.
-type Head struct {
-	// URL of the head.
-	URL string
+// head represents the head of a formula.
+type head struct {
+	// url of the head.
+	url string
 
 	// Version control system used.
-	VCS string
+	vcs string
 }
 
-func (h *Head) String() string {
-	return fmt.Sprintf("{%s %s}", h.URL, h.VCS)
+func (h *head) String() string {
+	return fmt.Sprintf("{%s %s}", h.url, h.vcs)
 }

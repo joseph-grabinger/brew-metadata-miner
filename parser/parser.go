@@ -14,14 +14,14 @@ type parser struct {
 	config *config.Config
 
 	// A map of formulas, where the key is the name of the formula.
-	formulas map[string]*Formula
+	formulas map[string]*sourceFormula
 }
 
 // NewParser creates a new parser.
 func NewParser(config *config.Config) *parser {
 	return &parser{
 		config:   config,
-		formulas: make(map[string]*Formula),
+		formulas: make(map[string]*sourceFormula),
 	}
 }
 
@@ -66,7 +66,7 @@ func (p *parser) readFormulas() error {
 			}
 
 			// Add the formula to the formulas map.
-			p.formulas[formula.Name] = formula
+			p.formulas[formula.name] = formula
 
 			log.Println("Successfully parsed formula:", formula)
 
@@ -79,7 +79,7 @@ func (p *parser) readFormulas() error {
 }
 
 // parseFromFile parses a formula from a file into a Formula struct.
-func parseFromFile(file *os.File) (*Formula, error) {
+func parseFromFile(file *os.File) (*sourceFormula, error) {
 	scanner := bufio.NewScanner(file)
 	formulaParser := &delegate.FormulaParser{Scanner: scanner}
 
@@ -87,13 +87,13 @@ func parseFromFile(file *os.File) (*Formula, error) {
 	if err != nil {
 		return nil, err
 	}
-	formula := &Formula{Name: name}
+	formula := &sourceFormula{name: name}
 
 	homepage, err := formulaParser.ParseField(homepagePattern, "homepage")
 	if err != nil {
 		return nil, err
 	}
-	formula.Homepage = homepage
+	formula.homepage = homepage
 
 	fields := []delegate.ParseStrategy{
 		delegate.NewSLM("url", urlPattern, *formulaParser),
@@ -109,39 +109,39 @@ func parseFromFile(file *os.File) (*Formula, error) {
 		return nil, err
 	}
 
-	formula.URL = results["url"].(string)
+	formula.url = results["url"].(string)
 	if results["mirror"] != nil {
-		formula.Mirror = results["mirror"].(string)
+		formula.mirror = results["mirror"].(string)
 	}
 	if results["license"] != nil {
-		formula.License = results["license"].(string)
+		formula.license = results["license"].(string)
 	}
 
 	// Set the license to "pseudo" if it is empty.
-	if formula.License == "" {
-		formula.License = "pseudo"
+	if formula.license == "" {
+		formula.license = "pseudo"
 	}
 
 	if results["head"] != nil {
-		head := results["head"].([]string)
-		if len(head) > 1 {
-			formula.Head = &Head{URL: head[0], VCS: head[1]}
+		formulaHead := results["head"].([]string)
+		if len(formulaHead) > 1 {
+			formula.head = &head{url: formulaHead[0], vcs: formulaHead[1]}
 		} else {
-			formula.Head = &Head{URL: head[0]}
+			formula.head = &head{url: formulaHead[0]}
 		}
 	}
 
-	dependencies := make([]*Dependency, 0)
+	dependencies := make([]*dependency, 0)
 	if results["dependency"] != nil {
 		for _, dep := range results["dependency"].([][]string) {
-			dependency := &Dependency{Name: dep[0]}
+			dependency := &dependency{name: dep[0]}
 			if len(dep) > 1 {
-				dependency.Type = dep[1]
+				dependency.depType = dep[1]
 			}
 			dependencies = append(dependencies, dependency)
 		}
 	}
-	formula.Dependencies = dependencies
+	formula.dependencies = dependencies
 
 	if err := scanner.Err(); err != nil {
 		return nil, err
