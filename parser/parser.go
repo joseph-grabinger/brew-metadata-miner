@@ -8,28 +8,26 @@ import (
 
 	"main/config"
 	"main/parser/delegate"
-	"main/parser/types"
 )
 
 type parser struct {
 	config *config.Config
 
 	// A map of formulas, where the key is the name of the formula.
-	formulas map[string]*types.Formula
+	formulas map[string]*Formula
 }
 
 // NewParser creates a new parser.
 func NewParser(config *config.Config) *parser {
 	return &parser{
 		config:   config,
-		formulas: make(map[string]*types.Formula),
+		formulas: make(map[string]*Formula),
 	}
 }
 
 // Parse parses the core repository and extracts the formulas.
 func (p *parser) Parse() error {
 	return p.readFormulas()
-
 }
 
 // ReadFormaulas reads all formulas from the core repository into the formulas map.
@@ -70,7 +68,7 @@ func (p *parser) readFormulas() error {
 			// Add the formula to the formulas map.
 			p.formulas[formula.Name] = formula
 
-			log.Println("Successfully parsed formula: ", formula)
+			log.Println("Successfully parsed formula:", formula)
 
 			return nil
 		}); err != nil {
@@ -81,7 +79,7 @@ func (p *parser) readFormulas() error {
 }
 
 // parseFromFile parses a formula from a file into a Formula struct.
-func parseFromFile(file *os.File) (*types.Formula, error) {
+func parseFromFile(file *os.File) (*Formula, error) {
 	scanner := bufio.NewScanner(file)
 	formulaParser := &delegate.FormulaParser{Scanner: scanner}
 
@@ -89,7 +87,7 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 	if err != nil {
 		return nil, err
 	}
-	formula := &types.Formula{Name: name}
+	formula := &Formula{Name: name}
 
 	homepage, err := formulaParser.ParseField(homepagePattern, "homepage")
 	if err != nil {
@@ -117,24 +115,26 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 	}
 	if results["license"] != nil {
 		formula.License = results["license"].(string)
-		if formula.License == "" {
-			formula.License = "pseudo"
-		}
+	}
+
+	// Set the license to "pseudo" if it is empty.
+	if formula.License == "" {
+		formula.License = "pseudo"
 	}
 
 	if results["head"] != nil {
 		head := results["head"].([]string)
 		if len(head) > 1 {
-			formula.Head = &types.Head{URL: head[0], VCS: head[1]}
+			formula.Head = &Head{URL: head[0], VCS: head[1]}
 		} else {
-			formula.Head = &types.Head{URL: head[0]}
+			formula.Head = &Head{URL: head[0]}
 		}
 	}
 
-	dependencies := make([]*types.Dependency, 0)
+	dependencies := make([]*Dependency, 0)
 	if results["dependency"] != nil {
 		for _, dep := range results["dependency"].([][]string) {
-			dependency := &types.Dependency{Name: dep[0]}
+			dependency := &Dependency{Name: dep[0]}
 			if len(dep) > 1 {
 				dependency.Type = dep[1]
 			}
