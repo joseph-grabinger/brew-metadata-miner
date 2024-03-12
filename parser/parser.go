@@ -56,7 +56,6 @@ func (p *parser) readFormulas() error {
 
 			file, err := os.Open(path)
 			if err != nil {
-				log.Printf("Error opening file %s: %v\n", path, err)
 				return err
 			}
 			defer file.Close()
@@ -86,24 +85,24 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 	scanner := bufio.NewScanner(file)
 	formulaParser := &delegate.FormulaParser{Scanner: scanner}
 
-	name, err := formulaParser.ParseField(`class\s([a-zA-Z0-9]+)\s<\sFormula`, "name")
+	name, err := formulaParser.ParseField(namePattern, "name")
 	if err != nil {
 		return nil, err
 	}
 	formula := &types.Formula{Name: name}
 
-	homepage, err := formulaParser.ParseField(`homepage\s+"([^"]+)"`, "homepage")
+	homepage, err := formulaParser.ParseField(homepagePattern, "homepage")
 	if err != nil {
 		return nil, err
 	}
 	formula.Homepage = homepage
 
-	fields := []delegate.Field{
-		delegate.NewSLF("url", `url\s+"([^"]+)"`, delegate.NewSLS(*formulaParser)),
-		delegate.NewSLF("mirror", `mirror\s+"([^"]+)"`, delegate.NewSLS(*formulaParser)),
-		delegate.NewMLF("license", `license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|"[^"]+")`, delegate.NewMLS(*formulaParser), isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence),
-		delegate.NewSLMF("head", `\s*head\s+"([^"]+)"`, delegate.NewSLMS(*formulaParser), []string{`using:\s*:(\w+)`}),
-		delegate.NewMLF("dependency", `^(\s{2}|\t)depends_on\s+"[^"]+"`, delegate.NewMLS(*formulaParser), isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence),
+	fields := []delegate.ParseStrategy{
+		delegate.NewSLM("url", urlPattern, *formulaParser),
+		delegate.NewSLM("mirror", mirrorPattern, *formulaParser),
+		delegate.NewMLM("license", licensePattern, *formulaParser, isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence),
+		delegate.NewSLMM("head", headURLPattern, *formulaParser, []string{headVCSPattern}),
+		delegate.NewMLM("dependency", dependencyPattern, *formulaParser, isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence),
 	}
 
 	results, err := formulaParser.ParseFields(fields)
@@ -112,19 +111,19 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 		return nil, err
 	}
 
-	formula.URL = results[fields[0]].(string)
-	if results[fields[1]] != nil {
-		formula.Mirror = results[fields[1]].(string)
+	formula.URL = results["url"].(string)
+	if results["mirror"] != nil {
+		formula.Mirror = results["mirror"].(string)
 	}
-	if results[fields[2]] != nil {
-		formula.License = results[fields[2]].(string)
+	if results["license"] != nil {
+		formula.License = results["license"].(string)
 		if formula.License == "" {
 			formula.License = "pseudo"
 		}
 	}
 
-	if results[fields[3]] != nil {
-		head := results[fields[3]].([]string)
+	if results["head"] != nil {
+		head := results["head"].([]string)
 		if len(head) > 1 {
 			formula.Head = &types.Head{URL: head[0], VCS: head[1]}
 		} else {
@@ -133,8 +132,8 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 	}
 
 	dependencies := make([]*types.Dependency, 0)
-	if results[fields[4]] != nil {
-		for _, dep := range results[fields[4]].([][]string) {
+	if results["dependency"] != nil {
+		for _, dep := range results["dependency"].([][]string) {
 			dependency := &types.Dependency{Name: dep[0]}
 			if len(dep) > 1 {
 				dependency.Type = dep[1]
@@ -145,7 +144,6 @@ func parseFromFile(file *os.File) (*types.Formula, error) {
 	formula.Dependencies = dependencies
 
 	if err := scanner.Err(); err != nil {
-		log.Println("Error scanning file:", err)
 		return nil, err
 	}
 

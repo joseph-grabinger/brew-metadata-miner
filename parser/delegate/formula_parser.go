@@ -3,7 +3,6 @@ package delegate
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"regexp"
 )
 
@@ -14,28 +13,27 @@ type FormulaParser struct {
 }
 
 // ParseFields parses the provided fields from a file.
-// It returns a map of fields to their values.
-func (fp *FormulaParser) ParseFields(fields []Field) (map[Field]interface{}, error) {
-	results := make(map[Field]interface{})
+// It returns a map of field names to their values.
+func (fp *FormulaParser) ParseFields(fields []ParseStrategy) (map[string]interface{}, error) {
+	results := make(map[string]interface{})
 
 	for fp.Scanner.Scan() {
 		line := fp.Scanner.Text()
 
 		for _, f := range fields {
 			// Skip field if it has already been matched.
-			if _, ok := results[f]; ok {
+			if _, ok := results[f.getName()]; ok {
 				continue
 			}
 
-			log.Printf("Line: <generic:%s>: %s\n", f.GetName(), line)
-			strat := f.GetStrat()
-			if strat.matchesField(f, line) {
-				fieldValue, err := strat.extractField(f, line)
+			// log.Printf("Line: <generic:%s>: %s\n", f.getName(), line)
+			if f.matchesLine(line) {
+				fieldValue, err := f.extractFromLine(line)
 				if err != nil {
 					return nil, err
 				}
-				results[f] = fieldValue
-				log.Println("Matched: ", results[f])
+				results[f.getName()] = fieldValue
+				// log.Println("Matched: ", results[f.getName()])
 				break
 			}
 		}
@@ -49,7 +47,7 @@ func (fp *FormulaParser) ParseFields(fields []Field) (map[Field]interface{}, err
 func (fp *FormulaParser) ParseField(pattern, name string) (string, error) {
 	for fp.Scanner.Scan() {
 		line := fp.Scanner.Text()
-		log.Printf("Line: %s: %s\n", name, line)
+		// log.Printf("Line: %s: %s\n", name, line)
 
 		regex := regexp.MustCompile(pattern)
 		matches := regex.FindStringSubmatch(line)
