@@ -50,7 +50,7 @@ func (p *parser) readFormulas() error {
 				return nil
 			}
 
-			log.Println("Reading file: ", path)
+			//	log.Println("Reading file: ", path)
 
 			file, err := os.Open(path)
 			if err != nil {
@@ -70,7 +70,7 @@ func (p *parser) readFormulas() error {
 			// Add the formula to the formulas map.
 			p.formulas[formula.name] = formula
 
-			log.Println("Successfully parsed formula:", formula)
+			//log.Println("Successfully parsed formula:", formula)
 
 			return nil
 		}); err != nil {

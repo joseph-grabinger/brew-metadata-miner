@@ -68,7 +68,7 @@ func cleanLicenseSequence(sequence []string) interface{} {
 // isBeginLicenseSequence returns true if the given line
 // is the beginning of a license sequence.
 func isBeginLicenseSequence(line string) bool {
-	match, _ := regexp.MatchString(licenseKeywordPattern, line) //`^\s*license`
+	match, _ := regexp.MatchString(licenseKeywordPattern, line)
 	return match && hasUnclosedBrackets(line)
 }
 
@@ -99,4 +99,37 @@ func countBrackets(s string) (open int, close int) {
 		}
 	}
 	return openCount, closeCount
+}
+
+// matchesKnownGitRepoHost checks if the given url matches a known git repository host pattern.
+// If true, it returns the matched repository url.
+func matchesKnownGitRepoHost(url string) (bool, string) {
+	githubRe := regexp.MustCompile(githubRepoPattern)
+	gitlabRe := regexp.MustCompile(gitlabRepoPattern)
+
+	if !(githubRe.MatchString(url) || gitlabRe.MatchString(url)) {
+		return false, ""
+	}
+
+	matches := regexp.MustCompile(repoPattern).FindStringSubmatch(url)
+
+	return true, matches[0] + ".git"
+}
+
+// matchesKnownGitArchiveHost checks if the given url matches a known git archive host pattern.
+// If true, it returns the matched repository url.
+func matchesKnownGitArchiveHost(url string) (bool, string) {
+	githubRe := regexp.MustCompile(githubArchivePattern)
+	if githubRe.MatchString(url) {
+		matches := githubRe.FindStringSubmatch(url)
+		return true, matches[1] + ".git"
+	}
+
+	gitlabRe := regexp.MustCompile(gitlabArchivePattern)
+	if gitlabRe.MatchString(url) {
+		matches := gitlabRe.FindStringSubmatch(url)
+		return true, matches[1] + ".git"
+	}
+
+	return false, ""
 }

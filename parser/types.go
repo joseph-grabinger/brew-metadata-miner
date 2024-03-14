@@ -1,6 +1,10 @@
 package parser
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+	"strings"
+)
 
 // formula represents a formula from the brew package manager.
 type formula struct {
@@ -34,16 +38,13 @@ func fromSourceFormula(sf *sourceFormula) *formula {
 		f.license = "pseudo"
 	}
 
-	if sf.head != nil {
-		f.repoURL = sf.head.url
-	} else if sf.url != "" {
-		f.repoURL = sf.url
-	} else if sf.mirror != "" {
-		f.repoURL = sf.mirror
-	} else {
-		// use homepage as fallback.
-		f.repoURL = sf.homepage
+	repoURL, err := sf.extractRepoURL()
+	if err != nil {
+		log.Println(err)
+		repoURL = ""
 	}
+
+	f.repoURL = repoURL
 
 	return f
 }
@@ -72,8 +73,47 @@ type sourceFormula struct {
 	head *head
 }
 
-func (f *sourceFormula) String() string {
-	return fmt.Sprintf("%s\nHomepage: %s\nURL: %s\nMirror: %s\nLicense: %s\nDependencies: %v\nHead: %v\n", f.name, f.homepage, f.url, f.mirror, f.license, f.dependencies, f.head)
+func (sf *sourceFormula) String() string {
+	return fmt.Sprintf("%s\nHomepage: %s\nURL: %s\nMirror: %s\nLicense: %s\nDependencies: %v\nHead: %v\n", sf.name, sf.homepage, sf.url, sf.mirror, sf.license, sf.dependencies, sf.head)
+}
+
+// extractRepoURL returns the repository URL of the formula.
+// It therfore inspects the URL, mirror and homepage fields of the formula.
+func (sf *sourceFormula) extractRepoURL() (string, error) {
+	var repoURL string
+
+	// Use head if it exists.
+	if sf.head != nil {
+		return sf.head.url, nil
+	}
+
+	// Check homepage for known repository hosts.
+	if m, repoURL := matchesKnownGitRepoHost(sf.homepage); m {
+		return repoURL, nil
+	}
+
+	if sf.url != "" {
+		repoURL = sf.url
+	} else if sf.mirror != "" {
+		repoURL = sf.mirror
+	} else {
+		// Use homepage as fallback.
+		repoURL = sf.homepage
+	}
+
+	if m, cleandedURL := matchesKnownGitRepoHost(repoURL); m {
+		return cleandedURL, nil
+	}
+
+	if m, cleandedURL := matchesKnownGitArchiveHost(repoURL); m {
+		return cleandedURL, nil
+	}
+
+	if strings.HasSuffix(repoURL, ".git") {
+		return repoURL, nil
+	}
+
+	return "", fmt.Errorf("no repository URL found for formula: %s, repoURL: %s", sf.name, repoURL)
 }
 
 // dependency represents a dependency of a formula.
