@@ -47,4 +47,5 @@ func main() {
 		log.Fatal(err)
 	}
 
+	parser.Analyze()
 }

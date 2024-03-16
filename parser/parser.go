@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -28,6 +29,24 @@ func NewParser(config *config.Config) *parser {
 // Parse parses the core repository and extracts the formulas.
 func (p *parser) Parse() error {
 	return p.readFormulas()
+}
+
+func (p *parser) Analyze() {
+	valid := make([]*formula, 0)
+	noRepo := make([]*formula, 0)
+
+	for _, value := range p.formulas {
+		if value.repoURL != "" {
+			valid = append(valid, value)
+		} else {
+			noRepo = append(noRepo, value)
+		}
+	}
+
+	fmt.Println("Total number of formulas:", len(p.formulas))
+	fmt.Println("Number of valid formulas:", len(valid))
+	fmt.Println("Number of formulas without a repository:", len(noRepo))
+	fmt.Println("Formulas without a repository:", noRepo)
 }
 
 // ReadFormaulas reads all formulas from the core repository into the formulas map.
