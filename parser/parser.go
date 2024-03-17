@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"main/config"
 	"main/parser/delegate"
@@ -87,7 +88,7 @@ func (p *parser) readFormulas() error {
 			formula := fromSourceFormula(sourceFormula)
 
 			// Add the formula to the formulas map.
-			p.formulas[formula.name] = formula
+			p.formulas[strings.ToLower(formula.name)] = formula
 
 			//log.Println("Successfully parsed formula:", formula)
 
