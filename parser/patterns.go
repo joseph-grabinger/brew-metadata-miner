@@ -2,11 +2,6 @@ package parser
 
 // RegEx patterns for parsing Formula fields.
 const (
-	// namePattern matches the string "class",
-	// followed by one or more alphanumeric characters, followed by <,
-	// followed by a whitespace, followed by the literal string "Formula".
-	namePattern = `class\s([a-zA-Z0-9]+)\s<\sFormula`
-
 	// homepagePattern matches the string "homepage"
 	// followed by a URL enclosed in double quotes.
 	homepagePattern = `homepage\s+"([^"]+)"`
@@ -36,6 +31,10 @@ const (
 	// headVCSPattern match the string "using" followed by a colon,
 	// optional whitespace, and then a sequence of alphanumeric characters.
 	headVCSPattern = `using:\s*:(\w+)`
+
+	// headBlockURLPattern matches the string "url"
+	// with four leading whitespace characters, followed by a string enclosed in double quotes.
+	headBlockURLPattern = `^\s{4}url\s+"([^"]+)"`
 
 	// headDependencyPattern matches four consecutive spaces or two tabs,
 	// followed by the string "depends_on", and then a string enclosed in double quotes.

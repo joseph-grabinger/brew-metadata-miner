@@ -55,7 +55,7 @@ func cleanHeadSequence(sequence []string) interface{} {
 	head := &head{dependencies: make([]*dependency, 0)}
 	for i := range sequence {
 		// Check for the URL.
-		regex := regexp.MustCompile(urlPattern)
+		regex := regexp.MustCompile(headBlockURLPattern)
 		matches := regex.FindStringSubmatch(sequence[i])
 		if len(matches) >= 2 {
 			head.url = matches[1]

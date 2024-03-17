@@ -88,7 +88,7 @@ func (p *parser) readFormulas() error {
 			formula := fromSourceFormula(sourceFormula)
 
 			// Add the formula to the formulas map.
-			p.formulas[strings.ToLower(formula.name)] = formula
+			p.formulas[formula.name] = formula
 
 			//log.Println("Successfully parsed formula:", formula)
 
@@ -105,10 +105,9 @@ func parseFromFile(file *os.File) (*sourceFormula, error) {
 	scanner := bufio.NewScanner(file)
 	formulaParser := &delegate.FormulaParser{Scanner: scanner}
 
-	name, err := formulaParser.ParseField(namePattern, "name")
-	if err != nil {
-		return nil, err
-	}
+	base := filepath.Base(file.Name())
+	name := strings.TrimSuffix(base, ".rb")
+
 	formula := &sourceFormula{name: name}
 
 	homepage, err := formulaParser.ParseField(homepagePattern, "homepage")
