@@ -106,8 +106,9 @@ func countBrackets(s string) (open int, close int) {
 func matchesKnownGitRepoHost(url string) (bool, string) {
 	githubRe := regexp.MustCompile(githubRepoPattern)
 	gitlabRe := regexp.MustCompile(gitlabRepoPattern)
+	bitBucketRe := regexp.MustCompile(bitbucketRepoPattern)
 
-	if !(githubRe.MatchString(url) || gitlabRe.MatchString(url)) {
+	if !(githubRe.MatchString(url) || gitlabRe.MatchString(url) || bitBucketRe.MatchString(url)) {
 		return false, ""
 	}
 
@@ -128,6 +129,12 @@ func matchesKnownGitArchiveHost(url string) (bool, string) {
 	gitlabRe := regexp.MustCompile(gitlabArchivePattern)
 	if gitlabRe.MatchString(url) {
 		matches := gitlabRe.FindStringSubmatch(url)
+		return true, matches[1] + ".git"
+	}
+
+	bitbucketRe := regexp.MustCompile(bitbucketArchivePattern)
+	if bitbucketRe.MatchString(url) {
+		matches := bitbucketRe.FindStringSubmatch(url)
 		return true, matches[1] + ".git"
 	}
 
