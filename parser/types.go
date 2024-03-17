@@ -92,6 +92,10 @@ func (sf *sourceFormula) extractRepoURL() (string, error) {
 		return repoURL, nil
 	}
 
+	if strings.Contains(sf.homepage, "git.") {
+		log.Println("HOMEPAGE CONTAINS GIT: ", sf.homepage, sf.name)
+	}
+
 	if sf.url != "" {
 		repoURL = sf.url
 	} else if sf.mirror != "" {
@@ -136,8 +140,11 @@ type head struct {
 
 	// Version control system used.
 	vcs string
+
+	// dependencies of the head.
+	dependencies []*dependency
 }
 
 func (h *head) String() string {
-	return fmt.Sprintf("{%s %s}", h.url, h.vcs)
+	return fmt.Sprintf("{%s %s, %s}", h.url, h.vcs, h.dependencies)
 }

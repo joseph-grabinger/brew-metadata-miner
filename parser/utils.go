@@ -50,6 +50,58 @@ func isEndDependencySequence(line string) bool {
 	return !regex.MatchString(line)
 }
 
+// cleanHeadSequence returns a cleaned []string from a sequence.
+func cleanHeadSequence(sequence []string) interface{} {
+	head := &head{dependencies: make([]*dependency, 0)}
+	for i := range sequence {
+		// Check for the URL.
+		regex := regexp.MustCompile(urlPattern)
+		matches := regex.FindStringSubmatch(sequence[i])
+		if len(matches) >= 2 {
+			head.url = matches[1]
+
+			// Check for the VCS.
+			regex = regexp.MustCompile(headVCSPattern)
+			matches = regex.FindStringSubmatch(sequence[i])
+			if len(matches) >= 2 {
+				head.vcs = matches[1]
+			}
+		}
+
+		// Check for dependencies.
+		regex = regexp.MustCompile(dependencyKeywordPattern)
+		matches = regex.FindStringSubmatch(sequence[i])
+		if len(matches) < 2 {
+			continue
+		}
+
+		dep := &dependency{name: matches[1]}
+
+		// Check for the dependency type.
+		regex = regexp.MustCompile(dependencyTypePattern)
+		typeMatches := regex.FindStringSubmatch(sequence[i])
+		if len(typeMatches) >= 2 {
+			dep.depType = typeMatches[1]
+		}
+		head.dependencies = append(head.dependencies, dep)
+	}
+	return head
+}
+
+// isBeginHeadSequence returns true if the given line
+// is the beginning of a head sequence.
+func isBeginHeadSequence(line string) bool {
+	regex := regexp.MustCompile(beginHeadPattern)
+	return regex.MatchString(line)
+}
+
+// isEndHeadSequence returns true if the given line
+// is the end of a head sequence.
+func isEndHeadSequence(line string) bool {
+	regex := regexp.MustCompile(endHeadPattern)
+	return regex.MatchString(line)
+}
+
 // cleanLicenseSequence returns a cleaned string from a sequence.
 func cleanLicenseSequence(sequence []string) interface{} {
 	// Remove leading license keyword.

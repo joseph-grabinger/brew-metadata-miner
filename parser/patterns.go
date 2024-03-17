@@ -37,6 +37,18 @@ const (
 	// optional whitespace, and then a sequence of alphanumeric characters.
 	headVCSPattern = `using:\s*:(\w+)`
 
+	// headDependencyPattern matches four consecutive spaces or two tabs,
+	// followed by the string "depends_on", and then a string enclosed in double quotes.
+	// headDependencyPattern = `^(\s{4}|\t{2})depends_on\s+"[^"]+"`
+
+	// beginHeadPattern matches two consecutive spaces or a tab,
+	// followed by the string "head do".
+	beginHeadPattern = `^(\s{2}|\t)head do\s*$`
+
+	// endHeadPattern matches two consecutive spaces or a tab,
+	// followed by the string "end".
+	endHeadPattern = `^(\s{2}|\t)end\s*$`
+
 	// dependencyPattern matches two consecutive spaces or a tab,
 	// followed by the string "depends_on", and then a string enclosed in double quotes.
 	dependencyPattern = `^(\s{2}|\t)depends_on\s+"[^"]+"`
