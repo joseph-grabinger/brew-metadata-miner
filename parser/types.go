@@ -36,6 +36,8 @@ func fromSourceFormula(sf *sourceFormula) *formula {
 
 	if f.license == "" {
 		f.license = "pseudo"
+	} else {
+		f.license = strings.ReplaceAll(f.license, "\"", "")
 	}
 
 	repoURL, err := sf.extractRepoURL()
