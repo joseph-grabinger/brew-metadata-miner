@@ -1,8 +1,7 @@
 all: clean run
 
 clean:
-	rm -rf ./out
-	rm -rf ./homebrew-core
+	rm -rf ./tmp
 
 run:
 	go run . 

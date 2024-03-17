@@ -17,8 +17,9 @@ const (
 	// licensePattern matches the word "license"
 	// followed by either a string enclosed in double quotes,
 	// or the keyword "all_of" followed by a sequence of strings enclosed in square brackets,
-	// or the keyword "any_of" followed by a sequence of strings enclosed in square brackets.
-	licensePattern = `license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|"[^"]+")`
+	// or the keyword "any_of" followed by a sequence of strings enclosed in square brackets,
+	// or the keyword "one_of" followed by a sequence of strings enclosed in square brackets.
+	licensePattern = `license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|one_of\s*:\s*\[[^\]]+\]|"[^"]+")`
 
 	// licenseKeywordPattern matches the string "license" with
 	// optional leading and trailing whitespace characters.

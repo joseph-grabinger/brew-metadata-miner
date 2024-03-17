@@ -48,7 +48,7 @@ func (c *Config) Validate() error {
 	s, err := os.Stat(c.OutputDir)
 	if err != nil && os.IsNotExist(err) {
 		// create the output directory
-		err = os.Mkdir(c.OutputDir, 0755)
+		err = os.MkdirAll(c.OutputDir, 0755)
 		if err != nil {
 			return err
 		}

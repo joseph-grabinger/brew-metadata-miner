@@ -23,7 +23,8 @@ func TestParse_Reliabity(t *testing.T) {
 
 	jsonLst := getJSONFromAPI()
 
-	missingCount := 0
+	// Assert total number of formulas.
+	assert.LessOrEqual(t, len(jsonLst), len(parser.formulas), "expected: %d formulas from API, got: %d from core repo", len(jsonLst), len(parser.formulas))
 
 	for _, apiFormula := range jsonLst {
 		name, ok := apiFormula["name"].(string)
@@ -35,13 +36,16 @@ func TestParse_Reliabity(t *testing.T) {
 		// Check if formula exists in parser.
 		formula, ok := parser.formulas[name]
 		if !ok {
-			// t.Errorf("formula %s not found", apiFormula["name"].(string))
-			missingCount++
+			t.Errorf("formula %s not found", apiFormula["name"].(string))
 			continue
 		}
 
 		// Assert licenses are equal.
-		assert.Equal(t, apiFormula["license"], formula.license, "expected: %s as license of %s, got: %s", apiFormula["license"], name, formula.license)
+		if apiFormula["license"] == nil {
+			assert.EqualValues(t, "pseudo", formula.license, "expected: pseudo license of %s, got: %s", name, formula.license)
+		} else {
+			assert.Equal(t, apiFormula["license"], formula.license, "expected: %s as license of %s, got: %s", apiFormula["license"], name, formula.license)
+		}
 
 		if headUrl, ok := getNestedMapValue(apiFormula, "urls", "head", "url"); ok {
 			assert.Equal(t, headUrl, formula.repoURL, "expected: %s as head url of %s, got: %s", headUrl, name, formula.repoURL)
@@ -71,8 +75,6 @@ func TestParse_Reliabity(t *testing.T) {
 			assert.ElementsMatch(t, systemDeps, systemFormulaDeps, "expected: %s as head url of %s, got: %s", systemDeps, name, systemFormulaDeps)
 		}
 	}
-
-	t.Logf("missing formulas: %d", missingCount)
 }
 
 func getJSONFromAPI() []map[string]interface{} {

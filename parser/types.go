@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 )
 
@@ -30,14 +31,8 @@ func (f *formula) String() string {
 func fromSourceFormula(sf *sourceFormula) *formula {
 	f := &formula{
 		name:         sf.name,
-		license:      sf.license,
+		license:      sf.extractLicense(),
 		dependencies: sf.dependencies,
-	}
-
-	if f.license == "" {
-		f.license = "pseudo"
-	} else {
-		f.license = strings.ReplaceAll(f.license, "\"", "")
 	}
 
 	repoURL, err := sf.extractRepoURL()
@@ -94,7 +89,7 @@ func (sf *sourceFormula) extractRepoURL() (string, error) {
 		return repoURL, nil
 	}
 
-	if strings.Contains(sf.homepage, "git.") {
+	if strings.Contains(sf.homepage, "git.") { // TODO: Check if this is a good indicator and handle accordingly.
 		log.Println("HOMEPAGE CONTAINS GIT: ", sf.homepage, sf.name)
 	}
 
@@ -120,6 +115,29 @@ func (sf *sourceFormula) extractRepoURL() (string, error) {
 	}
 
 	return "", fmt.Errorf("no repository URL found for formula: %s, repoURL: %s", sf.name, repoURL)
+}
+
+func (sf *sourceFormula) extractLicense() string {
+	if sf.license == "" {
+		return "pseudo"
+	}
+
+	license := strings.ReplaceAll(sf.license, "\"", "")
+
+	re := regexp.MustCompile(`\b[\w.-]+\b`)
+	matches := re.FindAllString(license, -1)
+	if len(matches) == 1 {
+		license = matches[0]
+	} else if matches[0] == "any_of" || matches[0] == "one_of" {
+		license = strings.Join(matches[1:], " or ")
+	} else if matches[0] == "all_of" {
+		license = strings.Join(matches[1:], " and ")
+	}
+
+	license = strings.ReplaceAll(license, "public_domain", "Public Domain")
+	license = strings.ReplaceAll(license, "cannot_represent", "Cannot Represent")
+
+	return license
 }
 
 // dependency represents a dependency of a formula.
