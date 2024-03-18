@@ -3,7 +3,6 @@ package parser
 import (
 	"fmt"
 	"log"
-	"regexp"
 	"strings"
 )
 
@@ -31,7 +30,7 @@ func (f *formula) String() string {
 func fromSourceFormula(sf *sourceFormula) *formula {
 	f := &formula{
 		name:         sf.name,
-		license:      sf.extractLicense(),
+		license:      sf.formatLicense(),
 		dependencies: sf.dependencies,
 	}
 
@@ -117,27 +116,79 @@ func (sf *sourceFormula) extractRepoURL() (string, error) {
 	return "", fmt.Errorf("no repository URL found for formula: %s, repoURL: %s", sf.name, repoURL)
 }
 
-func (sf *sourceFormula) extractLicense() string {
+func (sf *sourceFormula) formatLicense() string {
 	if sf.license == "" {
 		return "pseudo"
 	}
 
 	license := strings.ReplaceAll(sf.license, "\"", "")
+	license = strings.ReplaceAll(license, " ", "")
 
-	re := regexp.MustCompile(`\b[\w.-]+\b`)
-	matches := re.FindAllString(license, -1)
-	if len(matches) == 1 {
-		license = matches[0]
-	} else if matches[0] == "any_of" || matches[0] == "one_of" {
-		license = strings.Join(matches[1:], " or ")
-	} else if matches[0] == "all_of" {
-		license = strings.Join(matches[1:], " and ")
+	result := make([]rune, 0)
+	sequence := make([]string, 0)
+	word := make([]rune, 0)
+	open, close := 0, 0
+	operator := ""
+	for _, r := range license {
+		if r == ',' {
+			if len(word) > 0 {
+				sequence = append(sequence, string(word))
+				word = make([]rune, 0)
+			}
+			continue
+		}
+		if r == '[' {
+			open++
+
+			if len(sequence) > 0 {
+				joined := []rune(strings.Join(sequence, operator))
+				result = append(result, joined...)
+
+				// Check if open bracket is needed.
+				if open > 1 {
+					result = append(result, []rune(operator+"(")...)
+				}
+
+				sequence = make([]string, 0)
+			}
+
+			if string(word) == "any_of:" || string(word) == "one_of:" {
+				operator = " or "
+			} else if string(word) == "all_of:" {
+				operator = " and "
+			}
+
+			word = make([]rune, 0)
+			continue
+		}
+		if r == ']' {
+			close++
+
+			sequence = append(sequence, string(word))
+			word = make([]rune, 0)
+
+			joined := []rune(strings.Join(sequence, operator))
+
+			result = append(result, joined...)
+			sequence = make([]string, 0)
+
+			// Check if close bracket is needed.
+			if close > 1 {
+				result = append(result, ')')
+			}
+
+			continue
+		}
+		word = append(word, r)
 	}
 
-	license = strings.ReplaceAll(license, "public_domain", "Public Domain")
-	license = strings.ReplaceAll(license, "cannot_represent", "Cannot Represent")
+	if len(word) > 0 {
+		result = word
+	}
 
-	return license
+	res := strings.ReplaceAll(string(result), ":public_domain", "Public Domain")
+	res = strings.ReplaceAll(res, ":cannot_represent", "Cannot Represent")
+	return res
 }
 
 // dependency represents a dependency of a formula.
