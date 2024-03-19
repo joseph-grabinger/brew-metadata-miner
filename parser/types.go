@@ -132,7 +132,12 @@ func (sf *sourceFormula) formatLicense() string {
 	for _, r := range license {
 		if r == ',' {
 			if len(word) > 0 {
-				sequence = append(sequence, string(word))
+				w := string(word)
+				if operator != "" && strings.Contains(w, "=>{with:") {
+					w = "(" + w + ")"
+				}
+				// log.Println("Add WORD:", w)
+				sequence = append(sequence, w)
 				word = make([]rune, 0)
 			}
 			continue
@@ -142,6 +147,7 @@ func (sf *sourceFormula) formatLicense() string {
 
 			if len(sequence) > 0 {
 				joined := []rune(strings.Join(sequence, operator))
+				// log.Println("JOINED Opening:", string(joined))
 				result = append(result, joined...)
 
 				// Check if open bracket is needed.
@@ -164,10 +170,14 @@ func (sf *sourceFormula) formatLicense() string {
 		if r == ']' {
 			close++
 
-			sequence = append(sequence, string(word))
-			word = make([]rune, 0)
+			if len(word) > 0 {
+				// log.Println("Add WORD Closing:", string(word))
+				sequence = append(sequence, string(word))
+				word = make([]rune, 0)
+			}
 
 			joined := []rune(strings.Join(sequence, operator))
+			// log.Println("JOINED Closing:", string(joined))
 
 			result = append(result, joined...)
 			sequence = make([]string, 0)
@@ -188,6 +198,13 @@ func (sf *sourceFormula) formatLicense() string {
 
 	res := strings.ReplaceAll(string(result), ":public_domain", "Public Domain")
 	res = strings.ReplaceAll(res, ":cannot_represent", "Cannot Represent")
+
+	// Handle classpath exception.
+	res = strings.ReplaceAll(res, "=>", " ")
+	res = strings.ReplaceAll(res, ":", " ")
+	res = strings.ReplaceAll(res, "{", "")
+	res = strings.ReplaceAll(res, "}", "")
+	// log.Println("DONE:", res)
 	return res
 }
 

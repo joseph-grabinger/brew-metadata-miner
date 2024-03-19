@@ -21,6 +21,10 @@ var formatLicenseTests = []struct {
 		expected: "GPL-2.0-or-later or LGPL-2.1-or-later or MIT",
 	},
 	{
+		input:    `all_of: ["0BSD", "LGPL-2.1-or-later", "GPL-2.0-or-later", "GPL-3.0-or-later", ]`,
+		expected: "0BSD and LGPL-2.1-or-later and GPL-2.0-or-later and GPL-3.0-or-later",
+	},
+	{
 		input:    `one_of: [:public_domain, :cannot_represent]`,
 		expected: "Public Domain or Cannot Represent",
 	},
@@ -31,6 +35,14 @@ var formatLicenseTests = []struct {
 	{
 		input:    ``,
 		expected: "pseudo",
+	},
+	{
+		input:    `"LGPL-2.1-only" => { with: "OCaml-LGPL-linking-exception" }`,
+		expected: "LGPL-2.1-only with OCaml-LGPL-linking-exception",
+	},
+	{
+		input:    `all_of: ["BSD-3-Clause", "GFDL-1.3-no-invariants-only", "GPL-2.0-only", "GPL-3.0-only" => { with: "Qt-GPL-exception-1.0" }, "LGPL-3.0-only"]`,
+		expected: "BSD-3-Clause and GFDL-1.3-no-invariants-only and GPL-2.0-only and (GPL-3.0-only with Qt-GPL-exception-1.0) and LGPL-3.0-only",
 	},
 }
 
