@@ -125,28 +125,28 @@ func isBeginLicenseSequence(line string) bool {
 }
 
 // hasUnclosedBrackets returns true if the given line
-// has more opening than closing square brackets.
+// has more opening than closing brackets.
 func hasUnclosedBrackets(line string) bool {
 	open, close := countBrackets(line)
 	return open > close
 }
 
 // hasUnopenedBrackets returns true if the given line
-// has more closing than opening square brackets.
+// has more closing than opening brackets.
 func hasUnopenedBrackets(line string) bool {
 	open, close := countBrackets(line)
 	return open < close
 }
 
 // countBrackets returns the number of opening and
-// closing square brackets in the given string.
+// closing square and curly brackets in the given string.
 func countBrackets(s string) (open int, close int) {
 	openCount, closeCount := 0, 0
 	for _, char := range s {
 		switch char {
-		case '[':
+		case '[', '{':
 			openCount++
-		case ']':
+		case ']', '}':
 			closeCount++
 		}
 	}

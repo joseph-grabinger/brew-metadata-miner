@@ -29,6 +29,10 @@ var formatLicenseTests = []struct {
 		expected: "Public Domain or Cannot Represent",
 	},
 	{
+		input:    `all_of: ["GPL-2.0-or-later",{ any_of: ["GPL-2.0-only", "Artistic-2.0"] },]`,
+		expected: "GPL-2.0-or-later and (GPL-2.0-only or Artistic-2.0)",
+	},
+	{
 		input:    `MIT`,
 		expected: "MIT",
 	},
@@ -41,8 +45,16 @@ var formatLicenseTests = []struct {
 		expected: "LGPL-2.1-only with OCaml-LGPL-linking-exception",
 	},
 	{
+		input:    `"GPL-2.0-or-later" => {with: "Classpath-exception-2.0",}`,
+		expected: "GPL-2.0-or-later with Classpath-exception-2.0",
+	},
+	{
 		input:    `all_of: ["BSD-3-Clause", "GFDL-1.3-no-invariants-only", "GPL-2.0-only", "GPL-3.0-only" => { with: "Qt-GPL-exception-1.0" }, "LGPL-3.0-only"]`,
 		expected: "BSD-3-Clause and GFDL-1.3-no-invariants-only and GPL-2.0-only and (GPL-3.0-only with Qt-GPL-exception-1.0) and LGPL-3.0-only",
+	},
+	{
+		input:    `all_of: ["Unlicense", "Zlib", "MIT", "BSL-1.0", "BSD-3-Clause", "Apache-2.0", "BSD-2-Clause", "Apache-2.0" => { with: "LLVM-exception" }]`,
+		expected: "Unlicense and Zlib and MIT and BSL-1.0 and BSD-3-Clause and Apache-2.0 and BSD-2-Clause and (Apache-2.0 with LLVM-exception)",
 	},
 }
 

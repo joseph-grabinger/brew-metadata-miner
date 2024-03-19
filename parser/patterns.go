@@ -23,8 +23,9 @@ const (
 	licensePattern = `license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|one_of\s*:\s*\[[^\]]+\]|"[^"]+"(\s*=>\s*{\s*with:\s*"([^"]*)"\s*})?)`
 
 	// licenseKeywordPattern matches the string "license" with
-	// optional leading and trailing whitespace characters.
-	licenseKeywordPattern = `\s*license\s*`
+	// zero or more leading whitespace characters and
+	// optional trailing whitespace characters.
+	licenseKeywordPattern = `\s+license\s*`
 
 	// headURLPattern matches the string "head"
 	// followed by a string enclosed in double quotes, with optional leading whitespace.

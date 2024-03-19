@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 )
 
@@ -117,12 +118,22 @@ func (sf *sourceFormula) extractRepoURL() (string, error) {
 }
 
 func (sf *sourceFormula) formatLicense() string {
+	// log.Println("LICENSE:", sf.license)
 	if sf.license == "" {
 		return "pseudo"
 	}
 
 	license := strings.ReplaceAll(sf.license, "\"", "")
 	license = strings.ReplaceAll(license, " ", "")
+
+	// Remove unnecessary curly brackets.
+	re := regexp.MustCompile(`,{`)
+	license = re.ReplaceAllString(license, ",")
+	re = regexp.MustCompile(`]}`)
+	license = re.ReplaceAllString(license, "]")
+	// test
+	re = regexp.MustCompile(`,}`)
+	license = re.ReplaceAllString(license, "}")
 
 	result := make([]rune, 0)
 	sequence := make([]string, 0)
@@ -133,6 +144,7 @@ func (sf *sourceFormula) formatLicense() string {
 		if r == ',' {
 			if len(word) > 0 {
 				w := string(word)
+				// Check for license exceptions.
 				if operator != "" && strings.Contains(w, "=>{with:") {
 					w = "(" + w + ")"
 				}
@@ -171,8 +183,13 @@ func (sf *sourceFormula) formatLicense() string {
 			close++
 
 			if len(word) > 0 {
-				// log.Println("Add WORD Closing:", string(word))
-				sequence = append(sequence, string(word))
+				w := string(word)
+				// Check for license exceptions.
+				if operator != "" && strings.Contains(w, "=>{with:") {
+					w = "(" + w + ")"
+				}
+				// log.Println("Add WORD Closing:", w)
+				sequence = append(sequence, w)
 				word = make([]rune, 0)
 			}
 
