@@ -1,4 +1,4 @@
-package parser
+package types
 
 import (
 	"testing"
@@ -60,8 +60,8 @@ var formatLicenseTests = []struct {
 
 func TestFormatLicense(t *testing.T) {
 	for _, test := range formatLicenseTests {
-		sf := &sourceFormula{
-			license: test.input,
+		sf := &SourceFormula{
+			License: test.input,
 		}
 		license := sf.formatLicense()
 		if license != test.expected {

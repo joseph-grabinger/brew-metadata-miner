@@ -3,6 +3,8 @@ package parser
 import (
 	"regexp"
 	"strings"
+
+	"main/parser/types"
 )
 
 // cleanDependencySequence returns a cleaned [][]string from a sequence.
@@ -52,19 +54,19 @@ func isEndDependencySequence(line string) bool {
 
 // cleanHeadSequence returns a cleaned []string from a sequence.
 func cleanHeadSequence(sequence []string) interface{} {
-	head := &head{dependencies: make([]*dependency, 0)}
+	head := &types.Head{Dependencies: make([]*types.Dependency, 0)}
 	for i := range sequence {
 		// Check for the URL.
 		regex := regexp.MustCompile(headBlockURLPattern)
 		matches := regex.FindStringSubmatch(sequence[i])
 		if len(matches) >= 2 {
-			head.url = matches[1]
+			head.URL = matches[1]
 
 			// Check for the VCS.
 			regex = regexp.MustCompile(headVCSPattern)
 			matches = regex.FindStringSubmatch(sequence[i])
 			if len(matches) >= 2 {
-				head.vcs = matches[1]
+				head.VCS = matches[1]
 			}
 		}
 
@@ -75,15 +77,15 @@ func cleanHeadSequence(sequence []string) interface{} {
 			continue
 		}
 
-		dep := &dependency{name: matches[1]}
+		dep := &types.Dependency{Name: matches[1]}
 
 		// Check for the dependency type.
 		regex = regexp.MustCompile(dependencyTypePattern)
 		typeMatches := regex.FindStringSubmatch(sequence[i])
 		if len(typeMatches) >= 2 {
-			dep.depType = typeMatches[1]
+			dep.DepType = typeMatches[1]
 		}
-		head.dependencies = append(head.dependencies, dep)
+		head.Dependencies = append(head.Dependencies, dep)
 	}
 	return head
 }
@@ -151,44 +153,4 @@ func countBrackets(s string) (open int, close int) {
 		}
 	}
 	return openCount, closeCount
-}
-
-// matchesKnownGitRepoHost checks if the given url matches a known git repository host pattern.
-// If true, it returns the matched repository url.
-func matchesKnownGitRepoHost(url string) (bool, string) {
-	githubRe := regexp.MustCompile(githubRepoPattern)
-	gitlabRe := regexp.MustCompile(gitlabRepoPattern)
-	bitBucketRe := regexp.MustCompile(bitbucketRepoPattern)
-
-	if !(githubRe.MatchString(url) || gitlabRe.MatchString(url) || bitBucketRe.MatchString(url)) {
-		return false, ""
-	}
-
-	matches := regexp.MustCompile(repoPattern).FindStringSubmatch(url)
-
-	return true, matches[0] + ".git"
-}
-
-// matchesKnownGitArchiveHost checks if the given url matches a known git archive host pattern.
-// If true, it returns the matched repository url.
-func matchesKnownGitArchiveHost(url string) (bool, string) {
-	githubRe := regexp.MustCompile(githubArchivePattern)
-	if githubRe.MatchString(url) {
-		matches := githubRe.FindStringSubmatch(url)
-		return true, matches[1] + ".git"
-	}
-
-	gitlabRe := regexp.MustCompile(gitlabArchivePattern)
-	if gitlabRe.MatchString(url) {
-		matches := gitlabRe.FindStringSubmatch(url)
-		return true, matches[1] + ".git"
-	}
-
-	bitbucketRe := regexp.MustCompile(bitbucketArchivePattern)
-	if bitbucketRe.MatchString(url) {
-		matches := bitbucketRe.FindStringSubmatch(url)
-		return true, matches[1] + ".git"
-	}
-
-	return false, ""
 }

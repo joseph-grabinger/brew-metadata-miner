@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"io"
 	"log"
-	"main/config"
 	"net/http"
 	"testing"
+
+	"main/config"
+	"main/parser/types"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -42,13 +44,13 @@ func TestParse_Reliabity(t *testing.T) {
 
 		// Assert licenses are equal.
 		if apiFormula["license"] == nil {
-			assert.EqualValues(t, "pseudo", formula.license, "expected: pseudo license of %s, got: %s", name, formula.license)
+			assert.EqualValues(t, "pseudo", formula.License, "expected: pseudo license of %s, got: %s", name, formula.License)
 		} else {
-			assert.Equal(t, apiFormula["license"], formula.license, "expected: %s as license of %s, got: %s", apiFormula["license"], name, formula.license)
+			assert.Equal(t, apiFormula["license"], formula.License, "expected: %s as license of %s, got: %s", apiFormula["license"], name, formula.License)
 		}
 
 		if headUrl, ok := getNestedMapValue(apiFormula, "urls", "head", "url"); ok {
-			assert.Equal(t, headUrl, formula.repoURL, "expected: %s as head url of %s, got: %s", headUrl, name, formula.repoURL)
+			assert.Equal(t, headUrl, formula.RepoURL, "expected: %s as head url of %s, got: %s", headUrl, name, formula.RepoURL)
 		}
 
 		// Assert dependencies are equal.
@@ -99,11 +101,11 @@ func getJSONFromAPI() []map[string]interface{} {
 }
 
 // getDependeciesByType returns a list of dependencies of the given type.
-func getDependeciesByType(formula *formula, depType string) []string {
+func getDependeciesByType(formula *types.Formula, depType string) []string {
 	deps := make([]string, 0)
-	for _, dep := range formula.dependencies {
-		if dep.depType == depType {
-			deps = append(deps, dep.name)
+	for _, dep := range formula.Dependencies {
+		if dep.DepType == depType {
+			deps = append(deps, dep.Name)
 		}
 	}
 	return deps

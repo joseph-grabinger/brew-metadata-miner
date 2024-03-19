@@ -83,27 +83,3 @@ const (
 	// followed by any sequence of characters until the end of the line.
 	commentPattern = `#.*$`
 )
-
-// Known hosts for repository extraction.
-const (
-	// githubRepoPattern matches the URL of a Github repository.
-	githubRepoPattern = `https://github.com/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)(/|\.git|\?.*)?$`
-
-	// gitlabRepoPattern matches the URL of a Gitlab repository.
-	gitlabRepoPattern = `https://gitlab.com/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)(/|\.git|\?.*)?$`
-
-	// bitbucketRepoPattern matches the URL of a Bitbucket repository.
-	bitbucketRepoPattern = `https://bitbucket.org/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)(/|\.git|\?.*)?$`
-
-	// repoPattern represents a general repo pattern that matches the URL of any repository.
-	repoPattern = `(https:\/\/[a-zA-Z0-9.-]+)\/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)`
-
-	// githubArchivePattern matches the URL of a Github archive.
-	githubArchivePattern = `(https://github.com/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/(?:releases\/download|archive)\/.*` // archive\/refs\/tags
-
-	// gitlabArchivePattern matches the URL of a Gitlab archive.
-	gitlabArchivePattern = `(https://gitlab.com/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/(-\/archive|uploads)\/.*`
-
-	//bitbucketArchivePattern matches the URL of a Bitbucket archive.
-	bitbucketArchivePattern = `(https://bitbucket.org/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/(downloads|get)\/.*`
-)
