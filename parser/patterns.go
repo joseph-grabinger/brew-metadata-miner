@@ -2,11 +2,6 @@ package parser
 
 // RegEx patterns for parsing Formula fields.
 const (
-	// namePattern matches the string "class",
-	// followed by one or more alphanumeric characters, followed by <,
-	// followed by a whitespace, followed by the literal string "Formula".
-	namePattern = `class\s([a-zA-Z0-9]+)\s<\sFormula`
-
 	// homepagePattern matches the string "homepage"
 	// followed by a URL enclosed in double quotes.
 	homepagePattern = `homepage\s+"([^"]+)"`
@@ -22,12 +17,15 @@ const (
 	// licensePattern matches the word "license"
 	// followed by either a string enclosed in double quotes,
 	// or the keyword "all_of" followed by a sequence of strings enclosed in square brackets,
-	// or the keyword "any_of" followed by a sequence of strings enclosed in square brackets.
-	licensePattern = `license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|"[^"]+")`
+	// or the keyword "any_of" followed by a sequence of strings enclosed in square brackets,
+	// or the keyword "one_of" followed by a sequence of strings enclosed in square brackets,
+	// optionally followed by the "=>" symbol and a hash with the "with" key and a string value enclosed in double quotes.
+	licensePattern = `^\s+license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|one_of\s*:\s*\[[^\]]+\]|"[^"]+"(\s*=>\s*{\s*with:\s*"([^"]*)"\s*})?)`
 
 	// licenseKeywordPattern matches the string "license" with
-	// optional leading and trailing whitespace characters.
-	licenseKeywordPattern = `\s*license\s*`
+	// zero or more leading whitespace characters and
+	// optional trailing whitespace characters.
+	licenseKeywordPattern = `\s+license\s*`
 
 	// headURLPattern matches the string "head"
 	// followed by a string enclosed in double quotes, with optional leading whitespace.
@@ -36,6 +34,18 @@ const (
 	// headVCSPattern match the string "using" followed by a colon,
 	// optional whitespace, and then a sequence of alphanumeric characters.
 	headVCSPattern = `using:\s*:(\w+)`
+
+	// headBlockURLPattern matches the string "url"
+	// with four leading whitespace characters, followed by a string enclosed in double quotes.
+	headBlockURLPattern = `^\s{4}url\s+"([^"]+)"`
+
+	// beginHeadPattern matches two consecutive spaces or a tab,
+	// followed by the string "head do".
+	beginHeadPattern = `^(\s{2}|\t)head do\s*$`
+
+	// endHeadPattern matches two consecutive spaces or a tab,
+	// followed by the string "end".
+	endHeadPattern = `^(\s{2}|\t)end\s*$`
 
 	// dependencyPattern matches two consecutive spaces or a tab,
 	// followed by the string "depends_on", and then a string enclosed in double quotes.
@@ -68,28 +78,4 @@ const (
 	// commentPattern matches matches a line that starts with the "#" character,
 	// followed by any sequence of characters until the end of the line.
 	commentPattern = `#.*$`
-)
-
-// Known hosts for repository extraction.
-const (
-	// githubRepoPattern matches the URL of a Github repository.
-	githubRepoPattern = `https://github.com/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)(/|\.git|\?.*)?$`
-
-	// gitlabRepoPattern matches the URL of a Gitlab repository.
-	gitlabRepoPattern = `https://gitlab.com/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)(/|\.git|\?.*)?$`
-
-	// bitbucketRepoPattern matches the URL of a Bitbucket repository.
-	bitbucketRepoPattern = `https://bitbucket.org/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)(/|\.git|\?.*)?$`
-
-	// repoPattern represents a general repo pattern that matches the URL of any repository.
-	repoPattern = `(https:\/\/[a-zA-Z0-9.-]+)\/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)`
-
-	// githubArchivePattern matches the URL of a Github archive.
-	githubArchivePattern = `(https://github.com/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/(?:releases\/download|archive)\/.*` // archive\/refs\/tags
-
-	// gitlabArchivePattern matches the URL of a Gitlab archive.
-	gitlabArchivePattern = `(https://gitlab.com/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/(-\/archive|uploads)\/.*`
-
-	//bitbucketArchivePattern matches the URL of a Bitbucket archive.
-	bitbucketArchivePattern = `(https://bitbucket.org/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/(downloads|get)\/.*`
 )

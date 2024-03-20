@@ -10,20 +10,21 @@ import (
 
 	"main/config"
 	"main/parser/delegate"
+	"main/parser/types"
 )
 
 type parser struct {
 	config *config.Config
 
 	// A map of formulas, where the key is the name of the formula.
-	formulas map[string]*formula
+	formulas map[string]*types.Formula
 }
 
 // NewParser creates a new parser.
 func NewParser(config *config.Config) *parser {
 	return &parser{
 		config:   config,
-		formulas: make(map[string]*formula),
+		formulas: make(map[string]*types.Formula),
 	}
 }
 
@@ -33,11 +34,11 @@ func (p *parser) Parse() error {
 }
 
 func (p *parser) Analyze() {
-	valid := make([]*formula, 0)
-	noRepo := make([]*formula, 0)
+	valid := make([]*types.Formula, 0)
+	noRepo := make([]*types.Formula, 0)
 
 	for _, value := range p.formulas {
-		if value.repoURL != "" {
+		if value.RepoURL != "" {
 			valid = append(valid, value)
 		} else {
 			noRepo = append(noRepo, value)
@@ -70,7 +71,7 @@ func (p *parser) readFormulas() error {
 				return nil
 			}
 
-			//	log.Println("Reading file: ", path)
+			log.Println("Reading file: ", path)
 
 			file, err := os.Open(path)
 			if err != nil {
@@ -85,10 +86,10 @@ func (p *parser) readFormulas() error {
 				return err
 			}
 
-			formula := fromSourceFormula(sourceFormula)
+			formula := types.FromSourceFormula(sourceFormula)
 
 			// Add the formula to the formulas map.
-			p.formulas[strings.ToLower(formula.name)] = formula
+			p.formulas[formula.Name] = formula
 
 			//log.Println("Successfully parsed formula:", formula)
 
@@ -101,27 +102,26 @@ func (p *parser) readFormulas() error {
 }
 
 // parseFromFile parses a formula from a file into a Formula struct.
-func parseFromFile(file *os.File) (*sourceFormula, error) {
+func parseFromFile(file *os.File) (*types.SourceFormula, error) {
 	scanner := bufio.NewScanner(file)
 	formulaParser := &delegate.FormulaParser{Scanner: scanner}
 
-	name, err := formulaParser.ParseField(namePattern, "name")
-	if err != nil {
-		return nil, err
-	}
-	formula := &sourceFormula{name: name}
+	base := filepath.Base(file.Name())
+	name := strings.TrimSuffix(base, ".rb")
+
+	formula := &types.SourceFormula{Name: name}
 
 	homepage, err := formulaParser.ParseField(homepagePattern, "homepage")
 	if err != nil {
 		return nil, err
 	}
-	formula.homepage = homepage
+	formula.Homepage = homepage
 
 	fields := []delegate.ParseStrategy{
 		delegate.NewSLM("url", urlPattern, *formulaParser),
 		delegate.NewSLM("mirror", mirrorPattern, *formulaParser),
 		delegate.NewMLM("license", licensePattern, *formulaParser, isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence),
-		delegate.NewSLMM("head", headURLPattern, *formulaParser, []string{headVCSPattern}),
+		delegate.NewMLM("head", headURLPattern, *formulaParser, isBeginHeadSequence, isEndHeadSequence, cleanHeadSequence),
 		delegate.NewMLM("dependency", dependencyPattern, *formulaParser, isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence),
 	}
 
@@ -131,39 +131,40 @@ func parseFromFile(file *os.File) (*sourceFormula, error) {
 		return nil, err
 	}
 
-	formula.url = results["url"].(string)
+	formula.URL = results["url"].(string)
 	if results["mirror"] != nil {
-		formula.mirror = results["mirror"].(string)
+		formula.Mirror = results["mirror"].(string)
 	}
 	if results["license"] != nil {
-		formula.license = results["license"].(string)
+		formula.License = results["license"].(string)
 	}
 
 	// Set the license to "pseudo" if it is empty.
-	if formula.license == "" {
-		formula.license = "pseudo"
+	if formula.License == "" {
+		formula.License = "pseudo"
 	}
 
 	if results["head"] != nil {
-		formulaHead := results["head"].([]string)
-		if len(formulaHead) > 1 {
-			formula.head = &head{url: formulaHead[0], vcs: formulaHead[1]}
+		if formulaHead, ok := results["head"].(*types.Head); ok {
+			formula.Head = formulaHead
 		} else {
-			formula.head = &head{url: formulaHead[0]}
+			headURL := results["head"].(string)
+			formula.Head = &types.Head{URL: headURL}
 		}
+		// log.Println("Head:", formula.Head)
 	}
 
-	dependencies := make([]*dependency, 0)
+	dependencies := make([]*types.Dependency, 0)
 	if results["dependency"] != nil {
 		for _, dep := range results["dependency"].([][]string) {
-			dependency := &dependency{name: dep[0]}
+			dependency := &types.Dependency{Name: dep[0]}
 			if len(dep) > 1 {
-				dependency.depType = dep[1]
+				dependency.DepType = dep[1]
 			}
 			dependencies = append(dependencies, dependency)
 		}
 	}
-	formula.dependencies = dependencies
+	formula.Dependencies = dependencies
 
 	if err := scanner.Err(); err != nil {
 		return nil, err

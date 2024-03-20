@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"io"
 	"log"
-	"main/config"
 	"net/http"
 	"testing"
+
+	"main/config"
+	"main/parser/types"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -23,28 +25,32 @@ func TestParse_Reliabity(t *testing.T) {
 
 	jsonLst := getJSONFromAPI()
 
-	missingCount := 0
+	// Assert total number of formulas.
+	assert.LessOrEqual(t, len(jsonLst), len(parser.formulas), "expected: %d formulas from API, got: %d from core repo", len(jsonLst), len(parser.formulas))
 
 	for _, apiFormula := range jsonLst {
 		name, ok := apiFormula["name"].(string)
 		if !ok {
-			t.Log("name not found in formula")
+			t.Errorf("no name found in formula")
 			continue
 		}
 
 		// Check if formula exists in parser.
 		formula, ok := parser.formulas[name]
 		if !ok {
-			// t.Errorf("formula %s not found", apiFormula["name"].(string))
-			missingCount++
+			t.Errorf("formula %s not found", name)
 			continue
 		}
 
 		// Assert licenses are equal.
-		assert.Equal(t, apiFormula["license"], formula.license, "expected: %s as license of %s, got: %s", apiFormula["license"], name, formula.license)
+		if apiFormula["license"] == nil {
+			assert.EqualValues(t, "pseudo", formula.License, "expected: pseudo license of %s, got: %s", name, formula.License)
+		} else {
+			assert.Equal(t, apiFormula["license"], formula.License, "expected: %s as license of %s, got: %s", apiFormula["license"], name, formula.License)
+		}
 
 		if headUrl, ok := getNestedMapValue(apiFormula, "urls", "head", "url"); ok {
-			assert.Equal(t, headUrl, formula.repoURL, "expected: %s as head url of %s, got: %s", headUrl, name, formula.repoURL)
+			assert.Equal(t, headUrl, formula.RepoURL, "expected: %s as head url of %s, got: %s", headUrl, name, formula.RepoURL)
 		}
 
 		// Assert dependencies are equal.
@@ -71,10 +77,9 @@ func TestParse_Reliabity(t *testing.T) {
 			assert.ElementsMatch(t, systemDeps, systemFormulaDeps, "expected: %s as head url of %s, got: %s", systemDeps, name, systemFormulaDeps)
 		}
 	}
-
-	t.Logf("missing formulas: %d", missingCount)
 }
 
+// getJSONFromAPI returns a list of all formulas from the homebrew API.
 func getJSONFromAPI() []map[string]interface{} {
 	resp, err := http.Get("https://formulae.brew.sh/api/formula.json")
 	if err != nil {
@@ -97,11 +102,11 @@ func getJSONFromAPI() []map[string]interface{} {
 }
 
 // getDependeciesByType returns a list of dependencies of the given type.
-func getDependeciesByType(formula *formula, depType string) []string {
+func getDependeciesByType(formula *types.Formula, depType string) []string {
 	deps := make([]string, 0)
-	for _, dep := range formula.dependencies {
-		if dep.depType == depType {
-			deps = append(deps, dep.name)
+	for _, dep := range formula.Dependencies {
+		if dep.DepType == depType {
+			deps = append(deps, dep.Name)
 		}
 	}
 	return deps
