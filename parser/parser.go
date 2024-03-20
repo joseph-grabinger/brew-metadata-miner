@@ -121,7 +121,6 @@ func parseFromFile(file *os.File) (*types.SourceFormula, error) {
 		delegate.NewSLM("url", urlPattern, *formulaParser),
 		delegate.NewSLM("mirror", mirrorPattern, *formulaParser),
 		delegate.NewMLM("license", licensePattern, *formulaParser, isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence),
-		//delegate.NewSLMM("head", headURLPattern, *formulaParser, []string{headVCSPattern}),
 		delegate.NewMLM("head", headURLPattern, *formulaParser, isBeginHeadSequence, isEndHeadSequence, cleanHeadSequence),
 		delegate.NewMLM("dependency", dependencyPattern, *formulaParser, isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence),
 	}
@@ -148,16 +147,11 @@ func parseFromFile(file *os.File) (*types.SourceFormula, error) {
 	if results["head"] != nil {
 		if formulaHead, ok := results["head"].(*types.Head); ok {
 			formula.Head = formulaHead
-			// if len(formulaHead) > 1 {
-			// 	formula.head = &head{url: formulaHead[0], vcs: formulaHead[1]}
-			// } else {
-			// 	formula.head = &head{url: formulaHead[0]}
-			// }
 		} else {
 			headURL := results["head"].(string)
 			formula.Head = &types.Head{URL: headURL}
 		}
-		log.Println("Head:", formula.Head)
+		// log.Println("Head:", formula.Head)
 	}
 
 	dependencies := make([]*types.Dependency, 0)

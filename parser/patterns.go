@@ -20,7 +20,7 @@ const (
 	// or the keyword "any_of" followed by a sequence of strings enclosed in square brackets,
 	// or the keyword "one_of" followed by a sequence of strings enclosed in square brackets,
 	// optionally followed by the "=>" symbol and a hash with the "with" key and a string value enclosed in double quotes.
-	licensePattern = `license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|one_of\s*:\s*\[[^\]]+\]|"[^"]+"(\s*=>\s*{\s*with:\s*"([^"]*)"\s*})?)`
+	licensePattern = `^\s+license\s+(:\w+|all_of\s*:\s*\[[^\]]+\]|any_of\s*:\s*\[[^\]]+\]|one_of\s*:\s*\[[^\]]+\]|"[^"]+"(\s*=>\s*{\s*with:\s*"([^"]*)"\s*})?)`
 
 	// licenseKeywordPattern matches the string "license" with
 	// zero or more leading whitespace characters and
@@ -38,10 +38,6 @@ const (
 	// headBlockURLPattern matches the string "url"
 	// with four leading whitespace characters, followed by a string enclosed in double quotes.
 	headBlockURLPattern = `^\s{4}url\s+"([^"]+)"`
-
-	// headDependencyPattern matches four consecutive spaces or two tabs,
-	// followed by the string "depends_on", and then a string enclosed in double quotes.
-	// headDependencyPattern = `^(\s{4}|\t{2})depends_on\s+"[^"]+"`
 
 	// beginHeadPattern matches two consecutive spaces or a tab,
 	// followed by the string "head do".

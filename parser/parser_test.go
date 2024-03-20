@@ -31,14 +31,14 @@ func TestParse_Reliabity(t *testing.T) {
 	for _, apiFormula := range jsonLst {
 		name, ok := apiFormula["name"].(string)
 		if !ok {
-			t.Log("name not found in formula")
+			t.Errorf("no name found in formula")
 			continue
 		}
 
 		// Check if formula exists in parser.
 		formula, ok := parser.formulas[name]
 		if !ok {
-			t.Errorf("formula %s not found", apiFormula["name"].(string))
+			t.Errorf("formula %s not found", name)
 			continue
 		}
 
@@ -79,6 +79,7 @@ func TestParse_Reliabity(t *testing.T) {
 	}
 }
 
+// getJSONFromAPI returns a list of all formulas from the homebrew API.
 func getJSONFromAPI() []map[string]interface{} {
 	resp, err := http.Get("https://formulae.brew.sh/api/formula.json")
 	if err != nil {
