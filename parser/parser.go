@@ -63,7 +63,6 @@ func (p *parser) readFormulas() error {
 		// Walk through the directory to read each file.
 		if err := filepath.Walk(match, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
-				log.Printf("Error accessing path %s: %v\n", path, err)
 				return err
 			}
 			// Skip directories.
@@ -71,7 +70,7 @@ func (p *parser) readFormulas() error {
 				return nil
 			}
 
-			log.Println("Reading file: ", path)
+			// log.Println("Reading file: ", path)
 
 			file, err := os.Open(path)
 			if err != nil {
@@ -87,8 +86,6 @@ func (p *parser) readFormulas() error {
 			}
 
 			formula := types.FromSourceFormula(sourceFormula)
-
-			// Add the formula to the formulas map.
 			p.formulas[formula.Name] = formula
 
 			//log.Println("Successfully parsed formula:", formula)
@@ -151,7 +148,6 @@ func parseFromFile(file *os.File) (*types.SourceFormula, error) {
 			headURL := results["head"].(string)
 			formula.Head = &types.Head{URL: headURL}
 		}
-		// log.Println("Head:", formula.Head)
 	}
 
 	dependencies := make([]*types.Dependency, 0)

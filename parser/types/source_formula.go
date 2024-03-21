@@ -50,10 +50,6 @@ func (sf *SourceFormula) extractRepoURL() (string, error) {
 		return repoURL, nil
 	}
 
-	if strings.Contains(sf.Homepage, "git.") { // TODO: Check if this is a good indicator and handle accordingly.
-		log.Println("HOMEPAGE CONTAINS GIT: ", sf.Homepage, sf.Name)
-	}
-
 	if sf.URL != "" {
 		repoURL = sf.URL
 	} else if sf.Mirror != "" {
@@ -75,24 +71,31 @@ func (sf *SourceFormula) extractRepoURL() (string, error) {
 		return repoURL, nil
 	}
 
+	// TODO: Check if this is a good indicator and handle accordingly.
+	if strings.Contains(sf.Homepage, "git.") || strings.Contains(sf.Homepage, ".git") {
+		log.Println("HOMEPAGE CONTAINS GIT: ", sf.Homepage, sf.Name)
+	}
+
 	return "", fmt.Errorf("no repository URL found for formula: %s, repoURL: %s", sf.Name, repoURL)
 }
 
 func (sf *SourceFormula) formatLicense() string {
-	// log.Println("LICENSE:", sf.license)
 	if sf.License == "" {
 		return "pseudo"
 	}
 
-	license := strings.ReplaceAll(sf.License, "\"", "")
-	license = strings.ReplaceAll(license, " ", "")
+	// Remove spaces and quotes.
+	r := strings.NewReplacer(
+		" ", "",
+		"\"", "",
+	)
+	license := r.Replace(sf.License)
 
 	// Remove unnecessary curly brackets.
 	re := regexp.MustCompile(`,{`)
 	license = re.ReplaceAllString(license, ",")
 	re = regexp.MustCompile(`]}`)
 	license = re.ReplaceAllString(license, "]")
-	// test
 	re = regexp.MustCompile(`,}`)
 	license = re.ReplaceAllString(license, "}")
 
@@ -102,25 +105,22 @@ func (sf *SourceFormula) formatLicense() string {
 	open, close := 0, 0
 	operator := ""
 	for _, r := range license {
-		if r == ',' {
+		switch r {
+		case ',':
 			if len(word) > 0 {
 				w := string(word)
 				// Check for license exceptions.
 				if operator != "" && strings.Contains(w, "=>{with:") {
 					w = "(" + w + ")"
 				}
-				// log.Println("Add WORD:", w)
 				sequence = append(sequence, w)
 				word = make([]rune, 0)
 			}
-			continue
-		}
-		if r == '[' {
+		case '[':
 			open++
 
 			if len(sequence) > 0 {
 				joined := []rune(strings.Join(sequence, operator))
-				// log.Println("JOINED Opening:", string(joined))
 				result = append(result, joined...)
 
 				// Check if open bracket is needed.
@@ -138,9 +138,7 @@ func (sf *SourceFormula) formatLicense() string {
 			}
 
 			word = make([]rune, 0)
-			continue
-		}
-		if r == ']' {
+		case ']':
 			close++
 
 			if len(word) > 0 {
@@ -149,14 +147,11 @@ func (sf *SourceFormula) formatLicense() string {
 				if operator != "" && strings.Contains(w, "=>{with:") {
 					w = "(" + w + ")"
 				}
-				// log.Println("Add WORD Closing:", w)
 				sequence = append(sequence, w)
 				word = make([]rune, 0)
 			}
 
 			joined := []rune(strings.Join(sequence, operator))
-			// log.Println("JOINED Closing:", string(joined))
-
 			result = append(result, joined...)
 			sequence = make([]string, 0)
 
@@ -164,26 +159,25 @@ func (sf *SourceFormula) formatLicense() string {
 			if close > 1 {
 				result = append(result, ')')
 			}
-
-			continue
+		default:
+			word = append(word, r)
 		}
-		word = append(word, r)
 	}
 
 	if len(word) > 0 {
 		result = word
 	}
 
-	res := strings.ReplaceAll(string(result), ":public_domain", "Public Domain")
-	res = strings.ReplaceAll(res, ":cannot_represent", "Cannot Represent")
-
-	// Handle classpath exception.
-	res = strings.ReplaceAll(res, "=>", " ")
-	res = strings.ReplaceAll(res, ":", " ")
-	res = strings.ReplaceAll(res, "{", "")
-	res = strings.ReplaceAll(res, "}", "")
-	// log.Println("DONE:", res)
-	return res
+	// Handle license exceptions.
+	r = strings.NewReplacer(
+		":public_domain", "Public Domain",
+		":cannot_represent", "Cannot Represent",
+		"=>", " ",
+		":", " ",
+		"{", "",
+		"}", "",
+	)
+	return r.Replace(string(result))
 }
 
 // Known hosts for repository extraction.
