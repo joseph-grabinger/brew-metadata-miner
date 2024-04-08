@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"testing"
 
 	"main/config"
@@ -12,6 +13,92 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
+var ParseFromFileTests = []struct {
+	inputFilePath string
+	expected      *types.SourceFormula
+}{
+	{
+		inputFilePath: "../tmp/homebrew-core/Formula/i/i686-elf-gcc.rb",
+		expected: &types.SourceFormula{
+			Name:     "i686-elf-gcc",
+			Homepage: "https://gcc.gnu.org",
+			URL:      "https://ftp.gnu.org/gnu/gcc/gcc-13.2.0/gcc-13.2.0.tar.xz",
+			Mirror:   "https://ftpmirror.gnu.org/gcc/gcc-13.2.0/gcc-13.2.0.tar.xz",
+			License:  `"GPL-3.0-or-later" => { with: "GCC-exception-3.1" }`,
+			Head:     nil,
+			Dependencies: []*types.Dependency{
+				{Name: "gmp", DepType: ""},
+				{Name: "i686-elf-binutils", DepType: ""},
+				{Name: "libmpc", DepType: ""},
+				{Name: "mpfr", DepType: ""},
+			},
+		},
+	},
+	{
+		inputFilePath: "../tmp/homebrew-core/Formula/p/pike.rb",
+		expected: &types.SourceFormula{
+			Name:     "pike",
+			Homepage: "https://pike.lysator.liu.se/",
+			URL:      "https://pike.lysator.liu.se/pub/pike/latest-stable/Pike-v8.0.702.tar.gz",
+			Mirror:   "http://deb.debian.org/debian/pool/main/p/pike8.0/pike8.0_8.0.1738.orig.tar.gz",
+			License:  `any_of: ["GPL-2.0-only", "LGPL-2.1-only", "MPL-1.1"]`,
+			Head:     nil,
+			Dependencies: []*types.Dependency{
+				{Name: "gettext", DepType: ""},
+				{Name: "gmp", DepType: ""},
+				{Name: "jpeg-turbo", DepType: ""},
+				{Name: "libtiff", DepType: ""},
+				{Name: "nettle", DepType: ""},
+				{Name: "pcre", DepType: ""},
+				{Name: "webp", DepType: ""},
+				{Name: "bzip2", DepType: ""},        // on_linux
+				{Name: "krb5", DepType: ""},         // on_linux
+				{Name: "libxcrypt", DepType: ""},    // on_linux
+				{Name: "libxslt", DepType: ""},      // on_linux
+				{Name: "sqlite", DepType: ""},       // on_linux
+				{Name: "zlib", DepType: ""},         // on_linux
+				{Name: "gnu-sed", DepType: "build"}, // on_macos
+				{Name: "libnsl", DepType: ""},       // on_linux
+			},
+		},
+	},
+	{
+		inputFilePath: "../tmp/homebrew-core/Formula/s/srecord.rb",
+		expected: &types.SourceFormula{
+			Name:     "srecord",
+			Homepage: "https://srecord.sourceforge.net/",
+			URL:      "https://downloads.sourceforge.net/project/srecord/srecord/1.64/srecord-1.64.tar.gz",
+			Mirror:   "",
+			License:  `all_of: ["GPL-3.0-or-later", "LGPL-3.0-or-later"]`,
+			Head:     nil,
+			Dependencies: []*types.Dependency{
+				{Name: "boost", DepType: "build"},
+				{Name: "libtool", DepType: "build"},
+				{Name: "libgcrypt", DepType: ""},
+				{Name: "ghostscript", DepType: "build"}, // on_sonoma :or_newer && on_linux
+				{Name: "groff", DepType: "build"},       // on_ventura :or_newer && on_linux
+			},
+		},
+	},
+}
+
+func TestParseFromFile(t *testing.T) {
+	for _, test := range ParseFromFileTests {
+		file, err := os.Open(test.inputFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+
+		formula, err := parseFromFile(file)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		assert.Equal(t, test.expected, formula, "expected: %v, got: %v", test.expected, formula)
+	}
+}
 
 func TestParse_Reliabity(t *testing.T) {
 	config := &config.Config{}
