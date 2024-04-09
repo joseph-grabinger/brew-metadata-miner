@@ -8,16 +8,23 @@ import (
 	"main/parser/types"
 )
 
+func printSequence(sequence []string) {
+	for i := range sequence {
+		log.Println(sequence[i])
+	}
+}
+
 // cleanDependencySequence returns a cleaned [][]string from a sequence.
 func cleanDependencySequence(sequence []string) interface{} {
-	log.Println("Cleaning sequence: ", sequence)
-	res := make([][]string, 0)
+	// printSequence(sequence)
+	// log.Println("Cleaning sequence: ", sequence)
+	res := make([]*types.Dependency, 0)
 	for i := range sequence {
 		// Check for system dependency.
-		regex := regexp.MustCompile(systemDependencyPattern)
+		regex := regexp.MustCompile(macOSSystemDependencyPattern)
 		nameMatches := regex.FindStringSubmatch(sequence[i])
 		if len(nameMatches) >= 2 {
-			res = append(res, []string{nameMatches[1], "system"})
+			res = append(res, &types.Dependency{Name: nameMatches[1], DepType: "system"})
 			continue
 		}
 
@@ -32,9 +39,9 @@ func cleanDependencySequence(sequence []string) interface{} {
 		regex = regexp.MustCompile(dependencyTypePattern)
 		typeMatches := regex.FindStringSubmatch(sequence[i])
 		if len(typeMatches) >= 2 {
-			res = append(res, []string{nameMatches[1], typeMatches[1]})
+			res = append(res, &types.Dependency{Name: nameMatches[1], DepType: typeMatches[1]})
 		} else {
-			res = append(res, []string{nameMatches[1]})
+			res = append(res, &types.Dependency{Name: nameMatches[1]})
 		}
 	}
 	return res

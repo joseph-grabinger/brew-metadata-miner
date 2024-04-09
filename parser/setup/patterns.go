@@ -60,20 +60,26 @@ const (
 	// then a string enclosed in double quotes.
 	dependencyKeywordPattern = `depends_on\s+"([^"]+)"`
 
-	// systemDependencyPattern matches the string "uses_from_macos"
+	// macOSSystemDependencyPattern matches the string "uses_from_macos"
 	// followed by one or more whitespace characters,
 	// and then a string enclosed in double quotes.
-	systemDependencyPattern = `uses_from_macos\s+"([^"]+)"`
+	macOSSystemDependencyPattern = `uses_from_macos\s+"([^"]+)"`
+
+	// linuxDependencyPattern matches the string "on_linux"
+	// followed by one or more whitespace characters,
+	// and then a string enclosed in double quotes.
+	linuxDependencyPattern = `on_linux|uses_from_macos\s+"([^"]+)"`
 
 	// beginDependencyPattern matches two consecutive spaces or a tab,
 	// followed by either "depends_on" or "uses_from_macos",
 	//  and then a string enclosed in double quotes.
-	beginDependencyPattern = `^(\s{2}|\t)(depends_on|uses_from_macos)\s+"[^"]+"`
+	beginDependencyPattern = `^(\s{2}|\t)(depends_on|uses_from_macos|on_linux)\s+"[^"]+"`
 
 	// endDependencyPattern matches lines that consist entirely of whitespace characters
 	// or two consecutive spaces or a tab, followed by either
 	// "depends_on" or "uses_from_macos", followed by one or more whitespace characters.
-	endDependencyPattern = `^(\s{2}|\t)(depends_on|uses_from_macos)\s+|^[\s\t]*$`
+	endDependencyPattern = `^(\s{2,})(depends_on|uses_from_macos|on_linux|end)|^[\s\t]*$`
+	//`^(\s{2,})(depends_on|uses_from_macos|on_linux|end)\s+|^[\s\t]*$`
 
 	// commentPattern matches matches a line that starts with the "#" character,
 	// followed by any sequence of characters until the end of the line.

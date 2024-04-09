@@ -27,8 +27,8 @@ func (fp *FormulaParser) ParseFields(fields []ParseStrategy) (map[string]interfa
 			}
 
 			// log.Printf("Line: <generic:%s>: %s\n", f.getName(), line)
-			if f.matchesLine(line) {
-				fieldValue, err := f.extractFromLine(line)
+			if f.MatchesLine(line) {
+				fieldValue, err := f.ExtractFromLine(line)
 				if err != nil {
 					return nil, err
 				}

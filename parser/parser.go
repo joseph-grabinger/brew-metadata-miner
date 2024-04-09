@@ -71,7 +71,7 @@ func (p *parser) readFormulas() error {
 				return nil
 			}
 
-			// log.Println("Reading file: ", path)
+			log.Println("Reading file: ", path)
 
 			file, err := os.Open(path)
 			if err != nil {
@@ -145,17 +145,12 @@ func parseFromFile(file *os.File) (*types.SourceFormula, error) {
 		}
 	}
 
-	dependencies := make([]*types.Dependency, 0)
 	if results["dependency"] != nil {
-		for _, dep := range results["dependency"].([][]string) {
-			dependency := &types.Dependency{Name: dep[0]}
-			if len(dep) > 1 {
-				dependency.DepType = dep[1]
-			}
-			dependencies = append(dependencies, dependency)
-		}
+		formula.Dependencies = results["dependency"].([]*types.Dependency)
+	} else {
+		// log.Println("No dependencies found for formula:", formula.Name)
+		formula.Dependencies = make([]*types.Dependency, 0)
 	}
-	formula.Dependencies = dependencies
 
 	if err := scanner.Err(); err != nil {
 		return nil, err

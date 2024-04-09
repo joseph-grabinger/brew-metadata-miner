@@ -20,10 +20,10 @@ var MlmDependencyTests = []struct {
 	{
 		inputFilePath: "../../tmp/homebrew-core/Formula/p/pinentry.rb",
 		expected: []*types.Dependency{
-			{Name: "pkg-config", DepType: "build"},
-			{Name: "libassuan", DepType: ""},
-			{Name: "libgpg-error", DepType: ""},
-			{Name: "libsecret", DepType: ""}, // on_linux
+			{Name: "pkg-config", DepType: "build", SystemRequirement: ""},
+			{Name: "libassuan", DepType: "", SystemRequirement: ""},
+			{Name: "libgpg-error", DepType: "", SystemRequirement: ""},
+			{Name: "libsecret", DepType: "", SystemRequirement: "linux"}, // on_linux
 		},
 	},
 }
@@ -51,16 +51,11 @@ func TestMultiLineMatcherDependencies(t *testing.T) {
 
 				dependencies := make([]*types.Dependency, 0)
 				if fieldValue != nil {
-					for _, dep := range fieldValue.([][]string) {
-						dependency := &types.Dependency{Name: dep[0]}
-						if len(dep) > 1 {
-							dependency.DepType = dep[1]
-						}
-						dependencies = append(dependencies, dependency)
-					}
+					dependencies = fieldValue.([]*types.Dependency)
 				}
 
 				assert.Equal(t, test.expected, dependencies, "expected: %v, got: %v", test.expected, dependencies)
+				log.Println("Matched: ", dependencies)
 				break
 			}
 		}
