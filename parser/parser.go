@@ -10,6 +10,7 @@ import (
 
 	"main/config"
 	"main/parser/delegate"
+	"main/parser/setup"
 	"main/parser/types"
 )
 
@@ -88,7 +89,7 @@ func (p *parser) readFormulas() error {
 			formula := types.FromSourceFormula(sourceFormula)
 			p.formulas[formula.Name] = formula
 
-			//log.Println("Successfully parsed formula:", formula)
+			log.Println("Successfully parsed formula:", formula)
 
 			return nil
 		}); err != nil {
@@ -108,19 +109,13 @@ func parseFromFile(file *os.File) (*types.SourceFormula, error) {
 
 	formula := &types.SourceFormula{Name: name}
 
-	homepage, err := formulaParser.ParseField(homepagePattern, "homepage")
+	homepage, err := formulaParser.ParseField(setup.HomepagePattern, "homepage")
 	if err != nil {
 		return nil, err
 	}
 	formula.Homepage = homepage
 
-	fields := []delegate.ParseStrategy{
-		delegate.NewSLM("url", urlPattern, *formulaParser),
-		delegate.NewSLM("mirror", mirrorPattern, *formulaParser),
-		delegate.NewMLM("license", licensePattern, *formulaParser, isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence),
-		delegate.NewMLM("head", headURLPattern, *formulaParser, isBeginHeadSequence, isEndHeadSequence, cleanHeadSequence),
-		delegate.NewMLM("dependency", dependencyPattern, *formulaParser, isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence),
-	}
+	fields := setup.BuildStrategies(*formulaParser)
 
 	results, err := formulaParser.ParseFields(fields)
 	if err != nil {

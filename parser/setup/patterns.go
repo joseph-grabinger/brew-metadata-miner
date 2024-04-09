@@ -1,10 +1,10 @@
-package parser
+package setup
 
 // RegEx patterns for parsing Formula fields.
 const (
-	// homepagePattern matches the string "homepage"
+	// HomepagePattern matches the string "homepage"
 	// followed by a URL enclosed in double quotes.
-	homepagePattern = `homepage\s+"([^"]+)"`
+	HomepagePattern = `homepage\s+"([^"]+)"`
 
 	// urlPattern matches the string "url"
 	// followed by a string enclosed in double quotes.

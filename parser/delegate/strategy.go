@@ -2,6 +2,7 @@ package delegate
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 )
 
@@ -74,9 +75,9 @@ func (f *singleLineMatcher) extractFromLine(line string) (interface{}, error) {
 	return f.matches[1], nil
 }
 
-// multiLineMatcher acts as a concrete strategy that matches multiple lines of text.
+// MultiLineMatcher acts as a concrete strategy that matches multiple lines of text.
 // It embeds the singleLineMatcher and adds additional functionality.
-type multiLineMatcher struct {
+type MultiLineMatcher struct {
 	// Inherits properties and methods from the singleLineMatcher.
 	singleLineMatcher
 
@@ -95,8 +96,8 @@ type multiLineMatcher struct {
 }
 
 // NewMLM creates a new instance of multiLineMatcher.
-func NewMLM(name string, pattern string, fp FormulaParser, isBeginSeq func(line string) bool, isEndSeq func(line string) bool, clean func([]string) interface{}) *multiLineMatcher {
-	return &multiLineMatcher{
+func NewMLM(name string, pattern string, fp FormulaParser, isBeginSeq func(line string) bool, isEndSeq func(line string) bool, clean func([]string) interface{}) *MultiLineMatcher {
+	return &MultiLineMatcher{
 		singleLineMatcher: *NewSLM(name, pattern, fp),
 		isBeginSequence:   isBeginSeq,
 		isEndSequence:     isEndSeq,
@@ -105,12 +106,13 @@ func NewMLM(name string, pattern string, fp FormulaParser, isBeginSeq func(line 
 	}
 }
 
-// matchesLine checks if the given line contains a begin sequence.
+// MatchesLine checks if the given line contains a begin sequence.
 // If a begin sequence is found, the sequence is opened and the line is appended to the matches slice.
 // Else the line is checked against the default pattern of the field using the singleLineMatcher.
-func (f *multiLineMatcher) matchesLine(line string) bool {
+func (f *MultiLineMatcher) MatchesLine(line string) bool {
 	// Check for begin sequence.
 	if f.isBeginSequence(line) {
+		log.Println("Begin sequence found: ", line)
 		f.opened = true
 		f.matches = append(f.matches, line)
 		return true
@@ -120,10 +122,10 @@ func (f *multiLineMatcher) matchesLine(line string) bool {
 	return f.singleLineMatcher.matchesLine(line)
 }
 
-// extractFromLine returns the previously matched information at index 1
+// ExtractFromLine returns the previously matched information at index 1
 // of the matches slice if the opened flag is set.
 // Else it matches all lines until the end sequence is found.
-func (f *multiLineMatcher) extractFromLine(line string) (interface{}, error) {
+func (f *MultiLineMatcher) ExtractFromLine(line string) (interface{}, error) {
 	// A not open sequence means the field's default pattern has been matched.
 	// Thus, the field can be extracted from a single line.
 	if !f.opened {
@@ -132,9 +134,10 @@ func (f *multiLineMatcher) extractFromLine(line string) (interface{}, error) {
 
 	for f.FormulaParser.Scanner.Scan() {
 		line := f.FormulaParser.Scanner.Text()
-		// log.Println("Line: <genericMLS>: ", line)
+		log.Println("Line: <genericMLS>: ", line)
 
 		if f.isEndSequence(line) {
+			log.Println("End sequence found: ", line)
 			f.matches = append(f.matches, line)
 			cleaned := f.cleanSequence(f.matches)
 			return cleaned, nil

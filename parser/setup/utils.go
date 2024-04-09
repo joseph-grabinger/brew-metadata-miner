@@ -1,6 +1,7 @@
-package parser
+package setup
 
 import (
+	"log"
 	"regexp"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 
 // cleanDependencySequence returns a cleaned [][]string from a sequence.
 func cleanDependencySequence(sequence []string) interface{} {
+	log.Println("Cleaning sequence: ", sequence)
 	res := make([][]string, 0)
 	for i := range sequence {
 		// Check for system dependency.
