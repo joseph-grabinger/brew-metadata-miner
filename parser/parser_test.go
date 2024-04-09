@@ -40,7 +40,7 @@ var ParseFromFileTests = []struct {
 		expected: &types.SourceFormula{
 			Name:     "pike",
 			Homepage: "https://pike.lysator.liu.se/",
-			URL:      "https://pike.lysator.liu.se/pub/pike/latest-stable/Pike-v8.0.702.tar.gz",
+			URL:      "https://pike.lysator.liu.se/pub/pike/latest-stable/Pike-v8.0.1738.tar.gz",
 			Mirror:   "http://deb.debian.org/debian/pool/main/p/pike8.0/pike8.0_8.0.1738.orig.tar.gz",
 			License:  `any_of: ["GPL-2.0-only", "LGPL-2.1-only", "MPL-1.1"]`,
 			Head:     nil,
@@ -52,10 +52,10 @@ var ParseFromFileTests = []struct {
 				{Name: "nettle", DepType: ""},
 				{Name: "pcre", DepType: ""},
 				{Name: "webp", DepType: ""},
-				{Name: "bzip2", DepType: ""},        // on_linux
-				{Name: "krb5", DepType: ""},         // on_linux
-				{Name: "libxcrypt", DepType: ""},    // on_linux
-				{Name: "libxslt", DepType: ""},      // on_linux
+				{Name: "bzip2", DepType: ""},     // on_linux
+				{Name: "krb5", DepType: ""},      // on_linux
+				{Name: "libxcrypt", DepType: ""}, // on_linux
+				// {Name: "libxslt", DepType: ""},      // on_linux
 				{Name: "sqlite", DepType: ""},       // on_linux
 				{Name: "zlib", DepType: ""},         // on_linux
 				{Name: "gnu-sed", DepType: "build"}, // on_macos
