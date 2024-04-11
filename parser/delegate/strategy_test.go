@@ -26,6 +26,28 @@ var MlmDependencyTests = []struct {
 			{Name: "libsecret", DepType: "", SystemRequirement: "linux"}, // on_linux
 		},
 	},
+	{
+		inputFilePath: "../../tmp/homebrew-core/Formula/lib/libdill.rb",
+		expected: []*types.Dependency{
+			{Name: "autoconf", DepType: "build", SystemRequirement: ""},
+			{Name: "automake", DepType: "build", SystemRequirement: ""},
+			{Name: "libtool", DepType: "build", SystemRequirement: ""},
+			{Name: "llvm", DepType: "test", SystemRequirement: "arm"}, // on_arm
+		},
+	},
+	{
+		inputFilePath: "../../tmp/homebrew-core/Formula/g/grafana.rb",
+		expected: []*types.Dependency{
+			{Name: "go", DepType: "build", SystemRequirement: ""},
+			{Name: "node", DepType: "build", SystemRequirement: ""},
+			{Name: "yarn", DepType: "build", SystemRequirement: ""},
+			{Name: "python", DepType: "build", SystemRequirement: "linux, macos: < catalina"},           // uses_from_macos
+			{Name: "zlib", DepType: "", SystemRequirement: "linux"},                                     // uses_from_macos
+			{Name: "python-setuptools", DepType: "build", SystemRequirement: "linux, macos: <= mojave"}, // on_system
+			{Name: "fontconfig", DepType: "", SystemRequirement: "linux"},                               // on_linux
+			{Name: "freetype", DepType: "", SystemRequirement: "linux"},                                 // on_linux
+		},
+	},
 }
 
 func TestMultiLineMatcherDependencies(t *testing.T) {
@@ -54,8 +76,9 @@ func TestMultiLineMatcherDependencies(t *testing.T) {
 					dependencies = fieldValue.([]*types.Dependency)
 				}
 
-				assert.Equal(t, test.expected, dependencies, "expected: %v, got: %v", test.expected, dependencies)
 				log.Println("Matched: ", dependencies)
+
+				assert.Equal(t, test.expected, dependencies, "expected: %v, got: %v", test.expected, dependencies)
 				break
 			}
 		}

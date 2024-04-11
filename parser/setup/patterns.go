@@ -65,23 +65,50 @@ const (
 	// and then a string enclosed in double quotes.
 	macOSSystemDependencyPattern = `uses_from_macos\s+"([^"]+)"`
 
-	// linuxDependencyPattern matches the string "on_linux"
-	// followed by one or more whitespace characters,
-	// and then a string enclosed in double quotes.
-	linuxDependencyPattern = `on_linux|uses_from_macos\s+"([^"]+)"`
+	// osRestrictionPattern matches a sequence beginning with a comma,
+	// followed by one or more whitespace characters, the string "since:",
+	// one or more whitespace characters, and then one or more word characters
+	// (equivalent to [a-zA-Z0-9_]), which are captured.
+	osRestrictionPattern = `,\s+since:\s+:(\w+)`
 
 	// beginDependencyPattern matches two consecutive spaces or a tab,
-	// followed by either "depends_on" or "uses_from_macos",
-	//  and then a string enclosed in double quotes.
-	beginDependencyPattern = `^(\s{2}|\t)(depends_on|uses_from_macos|on_linux)\s+"[^"]+"`
+	// followed by either of the listed keywords: ("depends_on" or "uses_from_macos", etc.),
+	// followed by one or more whitespace characters.
+	beginDependencyPattern = `^(\s{2}|\t)(depends_on|uses_from_macos|on_arm|on_intel|on_linux|on_system|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan)\s+`
 
-	// endDependencyPattern matches lines that consist entirely of whitespace characters
-	// or two consecutive spaces or a tab, followed by either
-	// "depends_on" or "uses_from_macos", followed by one or more whitespace characters.
-	endDependencyPattern = `^(\s{2,})(depends_on|uses_from_macos|on_linux|end)|^[\s\t]*$`
-	//`^(\s{2,})(depends_on|uses_from_macos|on_linux|end)\s+|^[\s\t]*$`
+	// endDependencyPattern matches lines that consist entirely of whitespace characters,
+	// or a comment line (starts with zero or more spaces followed by '#'),
+	// or a line that starts with two white spaces, followed by either of the listed keywords:
+	// ("depends_on", "uses_from_macos", "on_arm", etc.).
+	endDependencyPattern = `^(\s{2,})(depends_on|uses_from_macos|on_arm|on_intel|on_linux|on_system|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan|end)|^[\s\t]*$|^\s*#.*$`
 
 	// commentPattern matches matches a line that starts with the "#" character,
 	// followed by any sequence of characters until the end of the line.
 	commentPattern = `#.*$`
+
+	// onSystemPattern matches a line beginning two or more whitespace characters,
+	// followed by the literal string "on_system".
+	onSystemPattern = `^(\s{2,})on_system`
+
+	// onSystemExtractPattern matches a sequence beginning with the literal string ":linux,",
+	// followed by one or more whitespace characters, the string literal "macos:",
+	// one or more whitespace characters, and then one or more word characters
+	// (equivalent to [a-zA-Z0-9_]), which are captured.
+	onSystemExtractPattern = `:linux,\s+macos:\s+:(\w+)`
+
+	// onLinuxPattern matches a line beginning two or more whitespace characters,
+	// followed by the literal string "on_linux".
+	onLinuxPattern = `^(\s{2,})on_linux`
+
+	// onArmPattern matches a line beginning two or more whitespace characters,
+	// followed by the literal string "on_arm".
+	onArmPattern = `^(\s{2,})on_arm`
+
+	// onIntelPattern matches a line beginning two or more whitespace characters,
+	// followed by the literal string "on_intel".
+	onIntelPattern = `^(\s{2,})on_intel`
+
+	// endPattern matches a line beginning two or more whitespace characters,
+	// followed by the literal string "end".
+	endPattern = `^(\s{2,})end`
 )
