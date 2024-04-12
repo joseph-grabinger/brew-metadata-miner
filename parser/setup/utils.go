@@ -94,6 +94,7 @@ func getOSRestriction(line string) string {
 
 // checkRequirements checks the given line for system requirements.
 // If a requirement is found, it is added to the requirements string.
+// System requirements include: on_system, on_linux, on_arm, and on_intel.
 func checkRequirements(line string, reqHelper *requirementsHelper) {
 	// Check for on_system.
 	regex := regexp.MustCompile(onSystemPattern)
@@ -141,13 +142,24 @@ func checkRequirements(line string, reqHelper *requirementsHelper) {
 // If the string format is invalid, an error is returned.
 // Example:
 // "sierra_or_older" => "<= sierra" or
-// "sierra_or_newer" => ">= sierra"
+// "high_sierra_or_newer" => ">= high_sierra"
 func formatVersion(version string) (string, error) {
 	parts := strings.Split(version, "_")
-	if len(parts) != 3 || (parts[2] != "older" && parts[2] != "newer") {
+
+	var v, res string
+	switch len(parts) {
+	case 3:
+		v, res = parts[0], parts[2]
+	case 4:
+		v, res = parts[0]+"_"+parts[1], parts[3]
+	default:
 		return "", fmt.Errorf("invalid input string format")
 	}
-	v, res := parts[0], parts[2]
+
+	if res != "older" && res != "newer" {
+		return "", fmt.Errorf("invalid input string format")
+	}
+
 	r := strings.NewReplacer("older", "<=", "newer", ">=")
 	return r.Replace(res) + " " + v, nil
 }
