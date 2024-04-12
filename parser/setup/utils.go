@@ -121,6 +121,14 @@ func checkRequirements(line string, reqHelper *requirementsHelper) {
 		return
 	}
 
+	// Check for on_macos.
+	regex = regexp.MustCompile(onMacosPattern)
+	if regex.MatchString(line) {
+		reqHelper.depth++
+		reqHelper.requirements += "macos"
+		return
+	}
+
 	// Check for on_arm.
 	regex = regexp.MustCompile(onArmPattern)
 	if regex.MatchString(line) {
@@ -135,6 +143,25 @@ func checkRequirements(line string, reqHelper *requirementsHelper) {
 		reqHelper.depth++
 		reqHelper.requirements += "intel"
 		return
+	}
+
+	// Check for on_macos versions e.g. "on_mojave :or_newer".
+	regex = regexp.MustCompile(onMacOSVersionPattern)
+	matches := regex.FindStringSubmatch(line)
+	if len(matches) >= 3 {
+		req := "macos: "
+		v, res := matches[2], matches[3]
+		if res != "" {
+			fv, err := formatVersion(v + "_" + res)
+			if err != nil {
+				panic(err)
+			}
+			req += fv
+		} else {
+			req += v
+		}
+		reqHelper.depth++
+		reqHelper.requirements += req
 	}
 }
 

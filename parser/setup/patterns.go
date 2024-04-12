@@ -82,7 +82,7 @@ const (
 	// ("depends_on", "uses_from_macos", "on_arm", etc.).
 	endDependencyPattern = `^(\s{2,})(depends_on|uses_from_macos|on_arm|on_intel|on_linux|on_system|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan|end)|^[\s\t]*$|^\s*#.*$`
 
-	// commentPattern matches matches a line that starts with the "#" character,
+	// commentPattern matches matches a sequence that starts with the "#" character,
 	// followed by any sequence of characters until the end of the line.
 	commentPattern = `#.*$`
 
@@ -96,19 +96,28 @@ const (
 	// (equivalent to [a-zA-Z0-9_]), which are captured.
 	onSystemExtractPattern = `:linux,\s+macos:\s+:(\w+)`
 
-	// onLinuxPattern matches a line beginning two or more whitespace characters,
+	// onLinuxPattern matches a line beginning with two or more whitespace characters,
 	// followed by the literal string "on_linux".
 	onLinuxPattern = `^(\s{2,})on_linux`
 
-	// onArmPattern matches a line beginning two or more whitespace characters,
+	// onMacosPattern matches a line beginning with two or more whitespace characters,
+	onMacosPattern = `^(\s{2,})on_macos`
+
+	// onMacOSVersionPattern matches a line beginning with two or more whitespace characters,
+	// followed by the literal string "on_" and a macOS version, which is captured.
+	// Optionally, the version may be followed by a colon and a word character
+	// indicating a restriction, which is also captured.
+	onMacOSVersionPattern = `^(\s{2,})on_(mojave|catalina|big_sur|monterey|ventura|sonoma|el_capitan)\s+(:\w+)?`
+
+	// onArmPattern matches a line beginning with two or more whitespace characters,
 	// followed by the literal string "on_arm".
 	onArmPattern = `^(\s{2,})on_arm`
 
-	// onIntelPattern matches a line beginning two or more whitespace characters,
+	// onIntelPattern matches a line beginning with two or more whitespace characters,
 	// followed by the literal string "on_intel".
 	onIntelPattern = `^(\s{2,})on_intel`
 
-	// endPattern matches a line beginning two or more whitespace characters,
+	// endPattern matches a line beginning with two or more whitespace characters,
 	// followed by the literal string "end".
 	endPattern = `^(\s{2,})end`
 )

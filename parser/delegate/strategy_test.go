@@ -48,6 +48,19 @@ var MlmDependencyTests = []struct {
 			{Name: "freetype", DepType: "", SystemRequirement: "linux"},                                 // on_linux
 		},
 	},
+	{
+		inputFilePath: "../../tmp/homebrew-core/Formula/l/lastpass-cli.rb",
+		expected: []*types.Dependency{
+			{Name: "asciidoc", DepType: "build", SystemRequirement: ""},
+			{Name: "cmake", DepType: "build", SystemRequirement: ""},
+			{Name: "docbook-xsl", DepType: "build", SystemRequirement: ""},
+			{Name: "pkg-config", DepType: "build", SystemRequirement: ""},
+			{Name: "openssl@3", DepType: "", SystemRequirement: ""},
+			{Name: "pinentry", DepType: "", SystemRequirement: ""},
+			{Name: "curl", DepType: "", SystemRequirement: "linux, macos: >= mojave"}, // uses_from_macos & on_mojave
+			{Name: "libxslt", DepType: "", SystemRequirement: "linux"},                // uses_from_macos
+		},
+	},
 }
 
 func TestMultiLineMatcherDependencies(t *testing.T) {
