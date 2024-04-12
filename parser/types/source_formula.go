@@ -92,12 +92,12 @@ func (sf *SourceFormula) formatLicense() string {
 	license := r.Replace(sf.License)
 
 	// Remove unnecessary curly brackets.
-	re := regexp.MustCompile(`,{`)
-	license = re.ReplaceAllString(license, ",")
-	re = regexp.MustCompile(`]}`)
-	license = re.ReplaceAllString(license, "]")
-	re = regexp.MustCompile(`,}`)
-	license = re.ReplaceAllString(license, "}")
+	r = strings.NewReplacer(
+		",{", ",",
+		"]}", "]",
+		",}", "}",
+	)
+	license = r.Replace(license)
 
 	result := make([]rune, 0)
 	sequence := make([]string, 0)
