@@ -17,12 +17,15 @@ func (s dependecySet) add(dep *types.Dependency) {
 	if d, ok := s[id]; ok {
 		// Merge the dependency`s system requirements.
 		log.Println("Merging system requirements for: ", dep.Name)
-		if d.SystemRequirement == "" {
-			d.SystemRequirement = dep.SystemRequirement
+		if dep.SystemRequirement == "" || d.SystemRequirement == "" {
 			return
 		}
-		if dep.SystemRequirement == "" {
-			return
+
+		if strings.Contains(dep.SystemRequirement, ", ") {
+			dep.SystemRequirement = fmt.Sprintf("(%s)", dep.SystemRequirement)
+		}
+		if strings.Contains(d.SystemRequirement, ", ") {
+			d.SystemRequirement = fmt.Sprintf("(%s)", d.SystemRequirement)
 		}
 
 		d.SystemRequirement = strings.Join([]string{d.SystemRequirement, dep.SystemRequirement}, ", ")
@@ -88,7 +91,7 @@ func cleanDependencySequence(sequence []string) interface{} {
 			set.add(&types.Dependency{
 				Name:              nameMatches[1],
 				DepType:           depType,
-				SystemRequirement: strings.Join(reqStack.Values(), ","),
+				SystemRequirement: strings.Join(reqStack.Values(), ", "),
 			})
 		}
 

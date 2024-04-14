@@ -58,12 +58,14 @@ const (
 	// dependencyKeywordPattern matchesthe string "depends_on"
 	// followed by one or more whitespace characters,
 	// then a string enclosed in double quotes.
-	dependencyKeywordPattern = `depends_on\s+"([^"]+)"`
+	// Further, it is ensured that the line does not start with a comment character "#".
+	dependencyKeywordPattern = `^[^#]*depends_on\s+"([^"]+)"`
 
 	// macOSSystemDependencyPattern matches the string "uses_from_macos"
 	// followed by one or more whitespace characters,
 	// and then a string enclosed in double quotes.
-	macOSSystemDependencyPattern = `uses_from_macos\s+"([^"]+)"`
+	// Further, it is ensured that the line does not start with a comment character "#".
+	macOSSystemDependencyPattern = `^[^#]*uses_from_macos\s+"([^"]+)"`
 
 	// osRestrictionPattern matches a sequence beginning with a comma,
 	// followed by one or more whitespace characters, the string "since:",
@@ -80,7 +82,8 @@ const (
 	// or a comment line (starts with zero or more spaces followed by '#'),
 	// or a line that starts with two white spaces, followed by either of the listed keywords:
 	// ("depends_on", "uses_from_macos", "on_arm", etc.).
-	endDependencyPattern = `^(\s{2,})(depends_on|uses_from_macos|on_macos|on_arm|on_intel|on_linux|on_system|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan|end)|^[\s\t]*$|^\s*#.*$`
+	// Further, any line strting with four or more whitespace characters followed by "fails_with" is also matched.
+	endDependencyPattern = `^(\s{2,})(depends_on|uses_from_macos|on_macos|on_arm|on_intel|on_linux|on_system|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan|end)|^[\s\t]*$|^\s*#.*$|^(\s{4,}fails_with)`
 
 	// commentPattern matches matches a sequence that starts with the "#" character,
 	// followed by any sequence of characters until the end of the line.

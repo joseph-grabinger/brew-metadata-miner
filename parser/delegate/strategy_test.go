@@ -61,6 +61,33 @@ var MlmDependencyTests = []struct {
 			{Name: "libxslt", DepType: "", SystemRequirement: "linux"},                // uses_from_macos
 		},
 	},
+	{
+		inputFilePath: "../../tmp/homebrew-core/Formula/b/btop.rb",
+		expected: []*types.Dependency{
+			{Name: "coreutils", DepType: "build", SystemRequirement: "macos"},                      // on_macos
+			{Name: "gcc", DepType: "", SystemRequirement: "(macos, (macos, arm)), macos: ventura"}, // on_macos & on_macos, on_arm & on_ventura
+		},
+	},
+	{
+		inputFilePath: "../../tmp/homebrew-core/Formula/e/emscripten.rb",
+		expected: []*types.Dependency{
+			{Name: "cmake", DepType: "build", SystemRequirement: ""},
+			{Name: "node", DepType: "", SystemRequirement: ""},
+			{Name: "python@3.12", DepType: "", SystemRequirement: ""},
+			{Name: "yuicompressor", DepType: "", SystemRequirement: ""},
+			{Name: "zlib", DepType: "", SystemRequirement: "linux"},                  // uses_from_macos
+			{Name: "openjdk", DepType: "", SystemRequirement: "(macos, arm), linux"}, // uses_from_macos
+		},
+	},
+	{
+		inputFilePath: "../../tmp/homebrew-core/Formula/g/grin-wallet.rb",
+		expected: []*types.Dependency{
+			{Name: "rust", DepType: "build", SystemRequirement: ""},
+			{Name: "llvm@15", DepType: "build", SystemRequirement: "macos, linux"}, // on_macos & on_linux
+			{Name: "pkg-config", DepType: "build", SystemRequirement: "linux"},     // on_linux
+			{Name: "openssl@3", DepType: "", SystemRequirement: "linux"},           // on_linux
+		},
+	},
 }
 
 func TestMultiLineMatcherDependencies(t *testing.T) {
