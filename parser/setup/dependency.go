@@ -2,6 +2,7 @@ package setup
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
@@ -9,16 +10,45 @@ import (
 	"main/stack"
 )
 
+type dependecySet map[string]*types.Dependency
+
+func (s dependecySet) add(dep *types.Dependency) {
+	id := dep.Id()
+	if d, ok := s[id]; ok {
+		// Merge the dependency`s system requirements.
+		log.Println("Merging system requirements for: ", dep.Name)
+		if d.SystemRequirement == "" {
+			d.SystemRequirement = dep.SystemRequirement
+			return
+		}
+		if dep.SystemRequirement == "" {
+			return
+		}
+
+		d.SystemRequirement = strings.Join([]string{d.SystemRequirement, dep.SystemRequirement}, ", ")
+		return
+	}
+	s[id] = dep
+}
+
+func (s dependecySet) toSlice() []*types.Dependency {
+	res := make([]*types.Dependency, 0)
+	for _, v := range s {
+		res = append(res, v)
+	}
+	return res
+}
+
 // cleanDependencySequence returns a cleaned slice of dependencies from a given sequence.
 // The slice is returned as an interface{} to be casted to []*types.Dependency.
 func cleanDependencySequence(sequence []string) interface{} {
-	// for i := range sequence {
-	// 	log.Println(sequence[i])
-	// }
-	// log.Println("Cleaning sequence: ", sequence)
+	for i := range sequence {
+		log.Println(sequence[i])
+	}
+	log.Println("Cleaning sequence: ", sequence)
 
 	reqStack := stack.New[string]()
-	res := make([]*types.Dependency, 0)
+	set := make(dependecySet, 0)
 	for i := range sequence {
 		// Check for system dependency.
 		regex := regexp.MustCompile(macOSSystemDependencyPattern)
@@ -31,11 +61,12 @@ func cleanDependencySequence(sequence []string) interface{} {
 			if since := getOSRestriction(sequence[i]); since != "" {
 				req += ", macos: < " + since
 			}
-			res = append(res, &types.Dependency{
+			set.add(&types.Dependency{
 				Name:              nameMatches[1],
 				DepType:           depType,
 				SystemRequirement: req,
 			})
+
 			continue
 		}
 
@@ -54,7 +85,7 @@ func cleanDependencySequence(sequence []string) interface{} {
 		nameMatches = regex.FindStringSubmatch(sequence[i])
 		if len(nameMatches) >= 2 {
 			depType := getDepType(sequence[i])
-			res = append(res, &types.Dependency{
+			set.add(&types.Dependency{
 				Name:              nameMatches[1],
 				DepType:           depType,
 				SystemRequirement: strings.Join(reqStack.Values(), ","),
@@ -64,7 +95,7 @@ func cleanDependencySequence(sequence []string) interface{} {
 		// Check for requirements.
 		checkRequirements(sequence[i], reqStack)
 	}
-	return res
+	return set.toSlice()
 }
 
 // getDepType returns the dependency type from the given line.

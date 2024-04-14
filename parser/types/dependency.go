@@ -19,3 +19,7 @@ type Dependency struct {
 func (d *Dependency) String() string {
 	return fmt.Sprintf("{%s %s %s}", d.Name, d.DepType, d.SystemRequirement)
 }
+
+func (d *Dependency) Id() string {
+	return fmt.Sprintf("%s,%s", d.Name, d.DepType)
+}

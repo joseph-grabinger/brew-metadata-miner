@@ -96,6 +96,8 @@ func TestParseFromFile(t *testing.T) {
 			log.Fatal(err)
 		}
 
+		assert.ElementsMatch(t, test.expected.Dependencies, formula.Dependencies, "expected: %v, got: %v", test.expected.Dependencies, formula.Dependencies)
+		test.expected.Dependencies, formula.Dependencies = nil, nil
 		assert.Equal(t, test.expected, formula, "expected: %v, got: %v", test.expected, formula)
 	}
 }

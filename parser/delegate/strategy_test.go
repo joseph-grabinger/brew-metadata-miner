@@ -91,7 +91,7 @@ func TestMultiLineMatcherDependencies(t *testing.T) {
 
 				log.Println("Matched: ", dependencies)
 
-				assert.Equal(t, test.expected, dependencies, "expected: %v, got: %v", test.expected, dependencies)
+				assert.ElementsMatch(t, test.expected, dependencies, "expected: %v, got: %v", test.expected, dependencies)
 				break
 			}
 		}

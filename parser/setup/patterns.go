@@ -74,13 +74,13 @@ const (
 	// beginDependencyPattern matches two consecutive spaces or a tab,
 	// followed by either of the listed keywords: ("depends_on" or "uses_from_macos", etc.),
 	// followed by one or more whitespace characters.
-	beginDependencyPattern = `^(\s{2}|\t)(depends_on|uses_from_macos|on_arm|on_intel|on_linux|on_system|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan)\s+`
+	beginDependencyPattern = `^(\s{2}|\t)(depends_on|uses_from_macos|on_macos|on_arm|on_intel|on_linux|on_system|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan)\s+`
 
 	// endDependencyPattern matches lines that consist entirely of whitespace characters,
 	// or a comment line (starts with zero or more spaces followed by '#'),
 	// or a line that starts with two white spaces, followed by either of the listed keywords:
 	// ("depends_on", "uses_from_macos", "on_arm", etc.).
-	endDependencyPattern = `^(\s{2,})(depends_on|uses_from_macos|on_arm|on_intel|on_linux|on_system|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan|end)|^[\s\t]*$|^\s*#.*$`
+	endDependencyPattern = `^(\s{2,})(depends_on|uses_from_macos|on_macos|on_arm|on_intel|on_linux|on_system|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan|end)|^[\s\t]*$|^\s*#.*$`
 
 	// commentPattern matches matches a sequence that starts with the "#" character,
 	// followed by any sequence of characters until the end of the line.
