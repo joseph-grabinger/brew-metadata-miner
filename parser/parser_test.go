@@ -40,7 +40,7 @@ var ParseFromFileTests = []struct {
 		expected: &types.SourceFormula{
 			Name:     "pike",
 			Homepage: "https://pike.lysator.liu.se/",
-			URL:      "https://pike.lysator.liu.se/pub/pike/latest-stable/Pike-v8.0.702.tar.gz",
+			URL:      "https://pike.lysator.liu.se/pub/pike/latest-stable/Pike-v8.0.1738.tar.gz",
 			Mirror:   "http://deb.debian.org/debian/pool/main/p/pike8.0/pike8.0_8.0.1738.orig.tar.gz",
 			License:  `any_of: ["GPL-2.0-only", "LGPL-2.1-only", "MPL-1.1"]`,
 			Head:     nil,
@@ -52,14 +52,14 @@ var ParseFromFileTests = []struct {
 				{Name: "nettle", DepType: ""},
 				{Name: "pcre", DepType: ""},
 				{Name: "webp", DepType: ""},
-				{Name: "bzip2", DepType: ""},        // on_linux
-				{Name: "krb5", DepType: ""},         // on_linux
-				{Name: "libxcrypt", DepType: ""},    // on_linux
-				{Name: "libxslt", DepType: ""},      // on_linux
-				{Name: "sqlite", DepType: ""},       // on_linux
-				{Name: "zlib", DepType: ""},         // on_linux
-				{Name: "gnu-sed", DepType: "build"}, // on_macos
-				{Name: "libnsl", DepType: ""},       // on_linux
+				{Name: "bzip2", DepType: "", SystemRequirement: "linux"},     // on_linux
+				{Name: "krb5", DepType: "", SystemRequirement: "linux"},      // on_linux
+				{Name: "libxcrypt", DepType: "", SystemRequirement: "linux"}, // on_linux
+				// {Name: "libxslt", DepType: ""},      // on_linux
+				{Name: "sqlite", DepType: "", SystemRequirement: "linux"},       // on_linux
+				{Name: "zlib", DepType: "", SystemRequirement: "linux"},         // on_linux
+				{Name: "gnu-sed", DepType: "build", SystemRequirement: "macos"}, // on_macos
+				{Name: "libnsl", DepType: "", SystemRequirement: "linux"},       // on_linux
 			},
 		},
 	},
@@ -76,8 +76,8 @@ var ParseFromFileTests = []struct {
 				{Name: "boost", DepType: "build"},
 				{Name: "libtool", DepType: "build"},
 				{Name: "libgcrypt", DepType: ""},
-				{Name: "ghostscript", DepType: "build"}, // on_sonoma :or_newer && on_linux
-				{Name: "groff", DepType: "build"},       // on_ventura :or_newer && on_linux
+				{Name: "ghostscript", DepType: "build", SystemRequirement: "macos: >= sonoma, linux"}, // on_sonoma :or_newer && on_linux
+				{Name: "groff", DepType: "build", SystemRequirement: "macos: >= ventura, linux"},      // on_ventura :or_newer && on_linux
 			},
 		},
 	},
@@ -96,6 +96,8 @@ func TestParseFromFile(t *testing.T) {
 			log.Fatal(err)
 		}
 
+		assert.ElementsMatch(t, test.expected.Dependencies, formula.Dependencies, "expected: %v, got: %v", test.expected.Dependencies, formula.Dependencies)
+		test.expected.Dependencies, formula.Dependencies = nil, nil
 		assert.Equal(t, test.expected, formula, "expected: %v, got: %v", test.expected, formula)
 	}
 }
