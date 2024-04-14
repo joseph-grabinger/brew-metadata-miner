@@ -52,14 +52,14 @@ var ParseFromFileTests = []struct {
 				{Name: "nettle", DepType: ""},
 				{Name: "pcre", DepType: ""},
 				{Name: "webp", DepType: ""},
-				{Name: "bzip2", DepType: ""},     // on_linux
-				{Name: "krb5", DepType: ""},      // on_linux
-				{Name: "libxcrypt", DepType: ""}, // on_linux
+				{Name: "bzip2", DepType: "", SystemRequirement: "linux"},     // on_linux
+				{Name: "krb5", DepType: "", SystemRequirement: "linux"},      // on_linux
+				{Name: "libxcrypt", DepType: "", SystemRequirement: "linux"}, // on_linux
 				// {Name: "libxslt", DepType: ""},      // on_linux
-				{Name: "sqlite", DepType: ""},       // on_linux
-				{Name: "zlib", DepType: ""},         // on_linux
-				{Name: "gnu-sed", DepType: "build"}, // on_macos
-				{Name: "libnsl", DepType: ""},       // on_linux
+				{Name: "sqlite", DepType: "", SystemRequirement: "linux"},       // on_linux
+				{Name: "zlib", DepType: "", SystemRequirement: "linux"},         // on_linux
+				{Name: "gnu-sed", DepType: "build", SystemRequirement: "macos"}, // on_macos
+				{Name: "libnsl", DepType: "", SystemRequirement: "linux"},       // on_linux
 			},
 		},
 	},
@@ -76,8 +76,8 @@ var ParseFromFileTests = []struct {
 				{Name: "boost", DepType: "build"},
 				{Name: "libtool", DepType: "build"},
 				{Name: "libgcrypt", DepType: ""},
-				{Name: "ghostscript", DepType: "build"}, // on_sonoma :or_newer && on_linux
-				{Name: "groff", DepType: "build"},       // on_ventura :or_newer && on_linux
+				{Name: "ghostscript", DepType: "build", SystemRequirement: "macos: >= sonoma, linux"}, // on_sonoma :or_newer && on_linux
+				{Name: "groff", DepType: "build", SystemRequirement: "macos: >= ventura, linux"},      // on_ventura :or_newer && on_linux
 			},
 		},
 	},

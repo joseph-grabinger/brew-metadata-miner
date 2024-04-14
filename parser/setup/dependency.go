@@ -6,13 +6,8 @@ import (
 	"strings"
 
 	"main/parser/types"
+	"main/stack"
 )
-
-type requirementsHelper struct {
-	requirements string
-	depth        int
-	// TODO check if depth is needed
-}
 
 // cleanDependencySequence returns a cleaned slice of dependencies from a given sequence.
 // The slice is returned as an interface{} to be casted to []*types.Dependency.
@@ -22,7 +17,7 @@ func cleanDependencySequence(sequence []string) interface{} {
 	// }
 	// log.Println("Cleaning sequence: ", sequence)
 
-	reqHelper := &requirementsHelper{requirements: "", depth: 0}
+	reqStack := stack.New[string]()
 	res := make([]*types.Dependency, 0)
 	for i := range sequence {
 		// Check for system dependency.
@@ -47,8 +42,10 @@ func cleanDependencySequence(sequence []string) interface{} {
 		// Check for end.
 		regex = regexp.MustCompile(endPattern)
 		if regex.MatchString(sequence[i]) {
-			reqHelper.depth--
-			reqHelper.requirements = ""
+			_, err := reqStack.Pop()
+			if err != nil {
+				panic(err)
+			}
 			continue
 		}
 
@@ -60,12 +57,12 @@ func cleanDependencySequence(sequence []string) interface{} {
 			res = append(res, &types.Dependency{
 				Name:              nameMatches[1],
 				DepType:           depType,
-				SystemRequirement: reqHelper.requirements,
+				SystemRequirement: strings.Join(reqStack.Values(), ","),
 			})
 		}
 
 		// Check for requirements.
-		checkRequirements(sequence[i], reqHelper)
+		checkRequirements(sequence[i], reqStack)
 	}
 	return res
 }
@@ -95,11 +92,10 @@ func getOSRestriction(line string) string {
 // checkRequirements checks the given line for system requirements.
 // If a requirement is found, it is added to the requirements string.
 // System requirements include: on_system, on_linux, on_arm, and on_intel.
-func checkRequirements(line string, reqHelper *requirementsHelper) {
+func checkRequirements(line string, reqStack *stack.Stack[string]) {
 	// Check for on_system.
 	regex := regexp.MustCompile(onSystemPattern)
 	if regex.MatchString(line) {
-		reqHelper.depth++
 		regex = regexp.MustCompile(onSystemExtractPattern)
 		matches := regex.FindStringSubmatch(line)
 		if len(matches) != 2 {
@@ -109,39 +105,35 @@ func checkRequirements(line string, reqHelper *requirementsHelper) {
 		if err != nil {
 			panic(err)
 		}
-		reqHelper.requirements += "linux, macos: " + v
+		reqStack.Push("linux, macos: " + v)
 		return
 	}
 
 	// Check for on_linux.
 	regex = regexp.MustCompile(onLinuxPattern)
 	if regex.MatchString(line) {
-		reqHelper.depth++
-		reqHelper.requirements += "linux"
+		reqStack.Push("linux")
 		return
 	}
 
 	// Check for on_macos.
 	regex = regexp.MustCompile(onMacosPattern)
 	if regex.MatchString(line) {
-		reqHelper.depth++
-		reqHelper.requirements += "macos"
+		reqStack.Push("macos")
 		return
 	}
 
 	// Check for on_arm.
 	regex = regexp.MustCompile(onArmPattern)
 	if regex.MatchString(line) {
-		reqHelper.depth++
-		reqHelper.requirements += "arm"
+		reqStack.Push("arm")
 		return
 	}
 
 	// Check for on_intel.
 	regex = regexp.MustCompile(onIntelPattern)
 	if regex.MatchString(line) {
-		reqHelper.depth++
-		reqHelper.requirements += "intel"
+		reqStack.Push("intel")
 		return
 	}
 
@@ -160,8 +152,7 @@ func checkRequirements(line string, reqHelper *requirementsHelper) {
 		} else {
 			req += v
 		}
-		reqHelper.depth++
-		reqHelper.requirements += req
+		reqStack.Push(req)
 	}
 }
 
