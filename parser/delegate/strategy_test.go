@@ -3,7 +3,7 @@ package delegate_test
 import (
 	"bufio"
 	"log"
-	"os"
+	"strings"
 	"testing"
 
 	"main/parser/delegate"
@@ -14,11 +14,19 @@ import (
 )
 
 var MlmDependencyTests = []struct {
-	inputFilePath string
-	expected      []*types.Dependency
+	input    string
+	expected []*types.Dependency
 }{
 	{
-		inputFilePath: "../../tmp/homebrew-core/Formula/p/pinentry.rb",
+		input: `  depends_on "pkg-config" => :build
+		depends_on "libassuan"
+		depends_on "libgpg-error"
+	  
+		on_linux do
+		  depends_on "libsecret"
+		end
+		
+		def install`, // pinentry.rb
 		expected: []*types.Dependency{
 			{Name: "pkg-config", DepType: "build", SystemRequirement: ""},
 			{Name: "libassuan", DepType: "", SystemRequirement: ""},
@@ -27,7 +35,20 @@ var MlmDependencyTests = []struct {
 		},
 	},
 	{
-		inputFilePath: "../../tmp/homebrew-core/Formula/lib/libdill.rb",
+		input: `  depends_on "autoconf" => :build
+		depends_on "automake" => :build
+		depends_on "libtool" => :build
+	  
+		on_arm do
+		  # Using Apple clang to compile test results in executable that
+		  # causes a segmentation fault, but LLVM clang or GCC seem to work.
+		  # Issue ref: https://github.com/sustrik/libdill/issues/208
+		  depends_on "llvm" => :test
+		end
+	  
+		# Apply upstream commit to fix build with newer GCC.
+		# Remove with next release.
+		patch do`, // libdill.rb
 		expected: []*types.Dependency{
 			{Name: "autoconf", DepType: "build", SystemRequirement: ""},
 			{Name: "automake", DepType: "build", SystemRequirement: ""},
@@ -36,7 +57,25 @@ var MlmDependencyTests = []struct {
 		},
 	},
 	{
-		inputFilePath: "../../tmp/homebrew-core/Formula/g/grafana.rb",
+		input: `  depends_on "go" => :build
+		depends_on "node" => :build
+		depends_on "yarn" => :build
+	  
+		uses_from_macos "python" => :build, since: :catalina
+		uses_from_macos "zlib"
+	  
+		on_system :linux, macos: :mojave_or_older do
+		  # Workaround for old node-gyp that needs distutils.
+		  # TODO: Remove when node-gyp is v10+
+		  depends_on "python-setuptools" => :build
+		end
+	  
+		on_linux do
+		  depends_on "fontconfig"
+		  depends_on "freetype"
+		end
+	  
+		def install`, // grafana.rb
 		expected: []*types.Dependency{
 			{Name: "go", DepType: "build", SystemRequirement: ""},
 			{Name: "node", DepType: "build", SystemRequirement: ""},
@@ -49,7 +88,22 @@ var MlmDependencyTests = []struct {
 		},
 	},
 	{
-		inputFilePath: "../../tmp/homebrew-core/Formula/l/lastpass-cli.rb",
+		input: `  depends_on "asciidoc" => :build
+		depends_on "cmake" => :build
+		depends_on "docbook-xsl" => :build
+		depends_on "pkg-config" => :build
+		depends_on "openssl@3"
+		depends_on "pinentry"
+	  
+		uses_from_macos "curl"
+		uses_from_macos "libxslt"
+	  
+		# Avoid crashes on Mojave's version of libcurl (https://github.com/lastpass/lastpass-cli/issues/427)
+		on_mojave :or_newer do
+		  depends_on "curl"
+		end
+	  
+		def install`, // lastpass-cli.rb
 		expected: []*types.Dependency{
 			{Name: "asciidoc", DepType: "build", SystemRequirement: ""},
 			{Name: "cmake", DepType: "build", SystemRequirement: ""},
@@ -62,14 +116,50 @@ var MlmDependencyTests = []struct {
 		},
 	},
 	{
-		inputFilePath: "../../tmp/homebrew-core/Formula/b/btop.rb",
+		input: `  on_macos do
+		depends_on "coreutils" => :build
+		depends_on "gcc" if DevelopmentTools.clang_build_version <= 1403
+	
+		on_arm do
+		  depends_on "gcc"
+		  depends_on macos: :ventura
+		  fails_with :clang
+		end
+	  end
+	
+	  on_ventura do
+		depends_on "gcc"
+		fails_with :clang
+	  end
+	
+	  # -ftree-loop-vectorize -flto=12 -s
+	  fails_with :clang do`, // btop.rb
 		expected: []*types.Dependency{
 			{Name: "coreutils", DepType: "build", SystemRequirement: "macos"},                      // on_macos
 			{Name: "gcc", DepType: "", SystemRequirement: "(macos, (macos, arm)), macos: ventura"}, // on_macos & on_macos, on_arm & on_ventura
 		},
 	},
 	{
-		inputFilePath: "../../tmp/homebrew-core/Formula/e/emscripten.rb",
+		input: `  depends_on "cmake" => :build
+		depends_on "node"
+		depends_on "python@3.12"
+		depends_on "yuicompressor"
+	  
+		uses_from_macos "zlib"
+	  
+		# OpenJDK is needed as a dependency on Linux and ARM64 for google-closure-compiler,
+		# an emscripten dependency, because the native GraalVM image will not work.
+		on_macos do
+		  on_arm do
+			depends_on "openjdk"
+		  end
+		end
+	  
+		on_linux do
+		  depends_on "openjdk"
+		end
+	  
+		fails_with gcc: "5"`, // emscripten.rb
 		expected: []*types.Dependency{
 			{Name: "cmake", DepType: "build", SystemRequirement: ""},
 			{Name: "node", DepType: "", SystemRequirement: ""},
@@ -80,7 +170,23 @@ var MlmDependencyTests = []struct {
 		},
 	},
 	{
-		inputFilePath: "../../tmp/homebrew-core/Formula/g/grin-wallet.rb",
+		input: `  depends_on "rust" => :build
+
+		# Use llvm@15 to work around build failure with Clang 16 described in
+		# https://github.com/rust-lang/rust-bindgen/issues/2312.
+		# TODO: Switch back to 'uses_from_macos "llvm" => :build' when 'bindgen' is
+		# updated to 0.62.0 or newer. There is a check in the 'install' method.
+		on_macos do
+		  depends_on "llvm@15" => :build if DevelopmentTools.clang_build_version >= 1500
+		end
+		on_linux do
+		  depends_on "llvm@15" => :build # for libclang
+		  depends_on "pkg-config" => :build
+		  depends_on "openssl@3" # Uses Secure Transport on macOS
+		end
+	  
+		# Backport fix for build error with Rust 1.71.0. Remove in the next release.
+		patch do`, // grin-wallet.rb
 		expected: []*types.Dependency{
 			{Name: "rust", DepType: "build", SystemRequirement: ""},
 			{Name: "llvm@15", DepType: "build", SystemRequirement: "macos, linux"}, // on_macos & on_linux
@@ -88,17 +194,32 @@ var MlmDependencyTests = []struct {
 			{Name: "openssl@3", DepType: "", SystemRequirement: "linux"},           // on_linux
 		},
 	},
+	{
+		input: `  on_macos do
+		on_arm do
+		  depends_on "gettext" => :build
+		  on_mojave do
+			depends_on "babl" => :test
+		  end
+		end
+		on_intel do
+		  depends_on "getmail" => :build
+		end
+	  end
+	  def install`, // pseudo
+		expected: []*types.Dependency{
+			{Name: "gettext", DepType: "build", SystemRequirement: "macos, arm"},
+			{Name: "babl", DepType: "test", SystemRequirement: "macos, arm, macos: mojave"},
+			{Name: "getmail", DepType: "build", SystemRequirement: "macos, intel"},
+		},
+	},
 }
 
 func TestMultiLineMatcherDependencies(t *testing.T) {
 	for _, test := range MlmDependencyTests {
-		file, err := os.Open(test.inputFilePath)
-		if err != nil {
-			log.Fatal(err)
+		formulaParser := &delegate.FormulaParser{
+			Scanner: bufio.NewScanner(strings.NewReader(test.input)),
 		}
-		defer file.Close()
-
-		formulaParser := &delegate.FormulaParser{Scanner: bufio.NewScanner(file)}
 
 		mlm := setup.BuildDependencyMatcher(*formulaParser)
 
