@@ -245,3 +245,142 @@ func TestMultiLineMatcherDependencies(t *testing.T) {
 		}
 	}
 }
+
+var MlmLicenseTests = []struct {
+	input    string
+	expected string
+}{
+	{
+		input:    `  license any_of: ["Apache-2.0", "MIT"]`, // wagyu.rb
+		expected: "any_of: [\"Apache-2.0\", \"MIT\"]",
+	},
+	{
+		input: `  license all_of: [
+			"BSD-2-Clause", # file-dotlock.h
+			"BSD-3-Clause",
+			"BSD-4-Clause",
+			"ISC",
+			"HPND-sell-variant", # GSSAPI code
+			"RSA-MD", # MD5 code
+		  ]`, // s-nail.rb
+		expected: "all_of: [\"BSD-2-Clause\",\"BSD-3-Clause\",\"BSD-4-Clause\",\"ISC\",\"HPND-sell-variant\",\"RSA-MD\",]",
+	},
+	{
+		input: `  license all_of: [
+			"BSD-2-Clause",
+			"LGPL-2.0-only",
+			"LGPL-2.0-or-later",
+			any_of: ["LGPL-2.0-only", "LGPL-3.0-only"],
+		  ]
+		  head "https://invent.kde.org/frameworks/karchive.git", branch: "master"`, // karchive.rb
+		expected: "all_of: [\"BSD-2-Clause\",\"LGPL-2.0-only\",\"LGPL-2.0-or-later\",any_of: [\"LGPL-2.0-only\", \"LGPL-3.0-only\"],]",
+	},
+	{
+		input:    `  license :public_domain`, // latexml.rb
+		expected: ":public_domain",
+	},
+	{
+		input:    `  license all_of: ["MIT", :cannot_represent]`, // halibut.rb
+		expected: "all_of: [\"MIT\", :cannot_represent]",
+	},
+	{
+		input: `  license "GPL-2.0-only" => { with: "GCC-exception-2.0" }
+		`, // libgit2@1.6.rb
+		expected: "\"GPL-2.0-only\" => { with: \"GCC-exception-2.0\" }",
+	},
+	{
+		input: `  license any_of: [
+			"CDDL-1.1",
+			{ "GPL-2.0-only" => { with: "Classpath-exception-2.0" } },
+		  ]`, // payara.rb
+		expected: "any_of: [\"CDDL-1.1\",{ \"GPL-2.0-only\" => { with: \"Classpath-exception-2.0\" } },]",
+	},
+}
+
+func TestMultiLineMatcherLicense(t *testing.T) {
+	for _, test := range MlmLicenseTests {
+		formulaParser := &delegate.FormulaParser{
+			Scanner: bufio.NewScanner(strings.NewReader(test.input)),
+		}
+
+		mlm := setup.BuildLicenseMatcher(*formulaParser)
+
+		for formulaParser.Scanner.Scan() {
+			line := formulaParser.Scanner.Text()
+
+			if mlm.MatchesLine(line) {
+				fieldValue, err := mlm.ExtractFromLine(line)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				var license string
+				if fieldValue != nil {
+					license = fieldValue.(string)
+				}
+				log.Println("Matched: ", license)
+
+				assert.Equal(t, test.expected, license, "expected: %v, got: %v", test.expected, license)
+				break
+			}
+		}
+	}
+}
+
+var MlmHeadTests = []struct {
+	input    string
+	expected interface{}
+}{
+	{
+		input:    `  head "https://github.com/EnzymeAD/Enzyme.git", branch: "main"`, // enzyme.rb
+		expected: "https://github.com/EnzymeAD/Enzyme.git",
+	},
+	{
+		input: `  head do
+    url "https://github.com/bcgsc/abyss.git", branch: "master"
+	
+		depends_on "autoconf" => :build
+		depends_on "automake" => :build
+		depends_on "multimarkdown" => :build
+  end
+	`, // abyss.rb
+		expected: &types.Head{
+			URL: "https://github.com/bcgsc/abyss.git",
+			Dependencies: []*types.Dependency{
+				{Name: "autoconf", DepType: "build"},
+				{Name: "automake", DepType: "build"},
+				{Name: "multimarkdown", DepType: "build"},
+			},
+		},
+	},
+	{
+		input:    `  head "http://hg.code.sf.net/p/optipng/mercurial", using: :hg`, // optipng.rb
+		expected: "http://hg.code.sf.net/p/optipng/mercurial",
+	},
+}
+
+func TestMultiLineMatcherHead(t *testing.T) {
+	for _, test := range MlmHeadTests {
+		formulaParser := &delegate.FormulaParser{
+			Scanner: bufio.NewScanner(strings.NewReader(test.input)),
+		}
+
+		mlm := setup.BuildHeadMatcher(*formulaParser)
+
+		for formulaParser.Scanner.Scan() {
+			line := formulaParser.Scanner.Text()
+
+			if mlm.MatchesLine(line) {
+				head, err := mlm.ExtractFromLine(line)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				log.Println("Matched: ", head)
+
+				assert.Equal(t, test.expected, head, "expected: %v, got: %v", test.expected, head)
+				break
+			}
+		}
+	}
+}

@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-// Formula represents a Formula from the brew package manager.
+// Formula represents a formula from the brew package manager.
 type Formula struct {
 	// Name of the formula.
 	Name string
@@ -16,7 +16,7 @@ type Formula struct {
 	// License of the formula.
 	License string
 
-	// A list of the formula's Dependencies.
+	// A list of the formula's dependencies.
 	Dependencies []*Dependency
 }
 

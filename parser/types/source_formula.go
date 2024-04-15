@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 )
@@ -69,11 +68,6 @@ func (sf *SourceFormula) extractRepoURL() (string, error) {
 
 	if strings.HasSuffix(repoURL, ".git") {
 		return repoURL, nil
-	}
-
-	// TODO: Check if this is a good indicator and handle accordingly.
-	if strings.Contains(sf.Homepage, "git.") || strings.Contains(sf.Homepage, ".git") {
-		log.Println("HOMEPAGE CONTAINS GIT: ", sf.Homepage, sf.Name)
 	}
 
 	return "", fmt.Errorf("no repository URL found for formula: %s, repoURL: %s", sf.Name, repoURL)
@@ -195,7 +189,7 @@ const (
 	repoPattern = `(https:\/\/[a-zA-Z0-9.-]+)\/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)`
 
 	// githubArchivePattern matches the URL of a Github archive.
-	githubArchivePattern = `(https://github.com/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/(?:releases\/download|archive)\/.*` // archive\/refs\/tags
+	githubArchivePattern = `(https://github.com/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/(?:releases\/download|archive)\/.*`
 
 	// gitlabArchivePattern matches the URL of a Gitlab archive.
 	gitlabArchivePattern = `(https://gitlab.com/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/(-\/archive|uploads)\/.*`

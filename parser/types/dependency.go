@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// Dependency represents a Dependency of a formula.
+// Dependency represents a dependency of a formula.
 type Dependency struct {
 	// Name of the dependency.
 	Name string

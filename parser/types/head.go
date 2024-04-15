@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// Head represents the Head of a formula.
+// Head represents the head of a formula.
 type Head struct {
 	// URL of the head.
 	URL string
