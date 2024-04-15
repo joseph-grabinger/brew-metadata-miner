@@ -2,16 +2,21 @@ package stack
 
 import "errors"
 
+// Stack represents a generic stack data structure.
 type Stack[T any] []T
 
+// New creates a new empty stack.
 func New[T any]() *Stack[T] {
 	return &Stack[T]{}
 }
 
-func (s *Stack[T]) Push(i T) {
-	*s = append(*s, i)
+// Push adds an element to the top of the stack.
+func (s *Stack[T]) Push(value T) {
+	*s = append(*s, value)
 }
 
+// Pop removes and returns the top element from the stack.
+// It returns an error if the stack is empty.
 func (s *Stack[T]) Pop() (T, error) {
 	if len(*s) == 0 {
 		var empty T
@@ -23,10 +28,12 @@ func (s *Stack[T]) Pop() (T, error) {
 	return elem, nil
 }
 
+// Values returns the values of the stack.
 func (s *Stack[T]) Values() []T {
 	return *s
 }
 
+// Clear removes all elements from the stack.
 func (s *Stack[T]) Clear() {
 	*s = []T{}
 }
