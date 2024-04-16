@@ -123,6 +123,7 @@ func parseFromFile(file *os.File) (*types.SourceFormula, error) {
 		return nil, err
 	}
 
+	// Set the fields of the formula.
 	formula.URL = results["url"].(string)
 	if results["mirror"] != nil {
 		formula.Mirror = results["mirror"].(string)
@@ -130,20 +131,12 @@ func parseFromFile(file *os.File) (*types.SourceFormula, error) {
 	if results["license"] != nil {
 		formula.License = results["license"].(string)
 	}
-
-	// Set the license to "pseudo" if it is empty.
-	if formula.License == "" {
-		formula.License = "pseudo"
-	}
-
 	if results["head"] != nil {
 		formula.Head = results["head"].(*types.Head)
 	}
-
 	if results["dependency"] != nil {
 		formula.Dependencies = results["dependency"].([]*types.Dependency)
 	} else {
-		// log.Println("No dependencies found for formula:", formula.Name)
 		formula.Dependencies = make([]*types.Dependency, 0)
 	}
 
