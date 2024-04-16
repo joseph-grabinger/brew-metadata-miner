@@ -137,12 +137,7 @@ func parseFromFile(file *os.File) (*types.SourceFormula, error) {
 	}
 
 	if results["head"] != nil {
-		if formulaHead, ok := results["head"].(*types.Head); ok {
-			formula.Head = formulaHead
-		} else {
-			headURL := results["head"].(string)
-			formula.Head = &types.Head{URL: headURL}
-		}
+		formula.Head = results["head"].(*types.Head)
 	}
 
 	if results["dependency"] != nil {

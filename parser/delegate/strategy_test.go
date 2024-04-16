@@ -329,11 +329,11 @@ func TestMultiLineMatcherLicense(t *testing.T) {
 
 var MlmHeadTests = []struct {
 	input    string
-	expected interface{}
+	expected *types.Head
 }{
 	{
 		input:    `  head "https://github.com/EnzymeAD/Enzyme.git", branch: "main"`, // enzyme.rb
-		expected: "https://github.com/EnzymeAD/Enzyme.git",
+		expected: &types.Head{URL: "https://github.com/EnzymeAD/Enzyme.git"},
 	},
 	{
 		input: `  head do
@@ -355,7 +355,7 @@ var MlmHeadTests = []struct {
 	},
 	{
 		input:    `  head "http://hg.code.sf.net/p/optipng/mercurial", using: :hg`, // optipng.rb
-		expected: "http://hg.code.sf.net/p/optipng/mercurial",
+		expected: &types.Head{URL: "http://hg.code.sf.net/p/optipng/mercurial"},
 	},
 }
 

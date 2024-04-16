@@ -44,11 +44,11 @@ func (s dependecySet) toSlice() []*types.Dependency {
 
 // cleanDependencySequence returns a cleaned slice of dependencies from a given sequence.
 // The slice is returned as an interface{} to be casted to []*types.Dependency.
-func cleanDependencySequence(sequence []string) interface{} {
-	for i := range sequence {
-		log.Println(sequence[i])
-	}
-	log.Println("Cleaning sequence: ", sequence)
+func cleanDependencySequence(sequence []string) []*types.Dependency {
+	// for i := range sequence {
+	// 	log.Println(sequence[i])
+	// }
+	// log.Println("Cleaning sequence: ", sequence)
 
 	reqStack := stack.New[string]()
 	set := make(dependecySet, 0)
