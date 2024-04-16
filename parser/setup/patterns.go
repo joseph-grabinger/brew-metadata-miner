@@ -31,10 +31,6 @@ const (
 	// followed by a string enclosed in double quotes, with optional leading whitespace.
 	headURLPattern = `\s*head\s+"([^"]+)"`
 
-	// headVCSPattern match the string "using" followed by a colon,
-	// optional whitespace, and then a sequence of alphanumeric characters.
-	headVCSPattern = `using:\s*:(\w+)`
-
 	// headBlockURLPattern matches the string "url"
 	// with four leading whitespace characters, followed by a string enclosed in double quotes.
 	headBlockURLPattern = `^\s{4}url\s+"([^"]+)"`

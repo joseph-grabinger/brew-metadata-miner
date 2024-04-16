@@ -13,6 +13,9 @@ type Formula struct {
 	// Repository URL of the formula.
 	RepoURL string
 
+	// Archive URL of the formula.
+	ArchiveURL string
+
 	// License of the formula.
 	License string
 
@@ -21,7 +24,7 @@ type Formula struct {
 }
 
 func (f *Formula) String() string {
-	return fmt.Sprintf("%s\nRepo: %s\nLicense: %s\nDependencies: %v\n", f.Name, f.RepoURL, f.License, f.Dependencies)
+	return fmt.Sprintf("%s\nRepo: %s\nArchive: %s\nLicense: %s\nDependencies: %v\n", f.Name, f.RepoURL, f.ArchiveURL, f.License, f.Dependencies)
 }
 
 // fromSourceFormula creates a formula from a source formula and evaluates the reopURL.
@@ -31,6 +34,7 @@ func FromSourceFormula(sf *SourceFormula) *Formula {
 		Name:         sf.Name,
 		License:      sf.formatLicense(),
 		Dependencies: sf.Dependencies,
+		ArchiveURL:   sf.URL,
 	}
 
 	repoURL, err := sf.extractRepoURL()

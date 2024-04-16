@@ -19,13 +19,6 @@ func cleanHeadSequence(sequence []string) *types.Head {
 		matches := regex.FindStringSubmatch(sequence[i])
 		if len(matches) >= 2 {
 			head.URL = matches[1]
-
-			// Check for the VCS.
-			regex = regexp.MustCompile(headVCSPattern)
-			matches = regex.FindStringSubmatch(sequence[i])
-			if len(matches) >= 2 {
-				head.VCS = matches[1]
-			}
 		}
 
 		// Check for dependencies.
