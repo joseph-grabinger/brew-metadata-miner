@@ -8,11 +8,6 @@ import (
 
 // cleanHeadSequence returns a cleaned []string from a sequence.
 func cleanHeadSequence(sequence []string) *types.Head {
-	// for i := range sequence {
-	// 	log.Println(sequence[i])
-	// }
-	// log.Println("Cleaning sequence: ", sequence)
-
 	if len(sequence) == 1 {
 		return &types.Head{URL: sequence[0]}
 	}
