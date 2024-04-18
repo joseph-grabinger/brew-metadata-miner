@@ -34,6 +34,10 @@ func (p *parser) Parse() error {
 	return p.readFormulas()
 }
 
+func (p *parser) Pipe() error {
+	return p.writeFormulas()
+}
+
 func (p *parser) Analyze() {
 	valid := make([]*types.Formula, 0)
 	noRepo := make([]*types.Formula, 0)
@@ -94,6 +98,49 @@ func (p *parser) readFormulas() error {
 			return nil
 		}); err != nil {
 			log.Printf("Error walking directory: %v\n", err)
+		}
+	}
+	return nil
+}
+
+func (p *parser) writeFormulas() error {
+	path := filepath.Join(p.config.OutputDir, "deps-brew.tsv")
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	// Close file on function exit and check its' returned error.
+	defer func() error {
+		if err := file.Close(); err != nil {
+			return err
+		}
+		return nil
+	}()
+
+	writer := bufio.NewWriter(file)
+	defer writer.Flush()
+
+	for _, formula := range p.formulas {
+		// Write repo line type.
+		line := formula.FormatRepoLine()
+		_, err := writer.WriteString(line)
+		if err != nil {
+			return err
+		}
+
+		// Write dependency lines.
+		for _, dep := range formula.Dependencies {
+			f := p.formulas[dep.Name]
+			if f == nil {
+				log.Println("Dependency not found:", dep.Name)
+				continue
+			}
+
+			line := formula.FormatDependencyLine(dep)
+			_, err := writer.WriteString(line)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
