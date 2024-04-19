@@ -27,6 +27,18 @@ func (f *Formula) String() string {
 	return fmt.Sprintf("%s\nRepo: %s\nArchive: %s\nLicense: %s\nDependencies: %v\n", f.Name, f.RepoURL, f.ArchiveURL, f.License, f.Dependencies)
 }
 
+// FormatRepoLine formats the formula as a repository line.
+// `0,"<namespace>/<username>/<repository>","<license>","<stablearchiveurl>"`
+func (f *Formula) FormatRepoLine() string {
+	return fmt.Sprintf("0\t\"%s\"\t\"%s\"\t\"%s\"\n", f.RepoURL, f.License, f.ArchiveURL)
+}
+
+// FormatDependencyLine formats the formula as a dependency line.
+// `1,"<license>","<namespace>/<username>/<repository>","<stablearchiveurl>","<type>","<packagemanager>","<name>","<systemrestriction>"`
+func (f *Formula) FormatDependencyLine(dep *Dependency) string {
+	return fmt.Sprintf("1\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\n", f.License, f.RepoURL, f.ArchiveURL, dep.DepType, "brew", dep.Name, dep.SystemRequirement)
+}
+
 // fromSourceFormula creates a formula from a source formula and evaluates the reopURL.
 // It returns a pointer to the newly created formula.
 func FromSourceFormula(sf *SourceFormula) *Formula {

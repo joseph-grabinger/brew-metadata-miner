@@ -34,6 +34,10 @@ func (p *parser) Parse() error {
 	return p.readFormulas()
 }
 
+func (p *parser) Pipe() error {
+	return p.writeFormulas()
+}
+
 func (p *parser) Analyze() {
 	valid := make([]*types.Formula, 0)
 	noRepo := make([]*types.Formula, 0)
@@ -54,46 +58,81 @@ func (p *parser) Analyze() {
 
 // ReadFormaulas reads all formulas from the core repository into the formulas map.
 func (p *parser) readFormulas() error {
-	// Match parent directories of the fomula files.
-	matches, err := filepath.Glob(p.config.CoreRepo.Dir + "/Formula/*")
+	// Match the fomula files.
+	matches, err := filepath.Glob(p.config.CoreRepo.Dir + "/Formula/**/*.rb")
 	if err != nil {
 		return err
 	}
 
-	for _, match := range matches {
-		// Walk through the directory to read each file.
-		if err := filepath.Walk(match, func(path string, info os.FileInfo, err error) error {
+	// Match alias formula files.
+	aliasMatches, err := filepath.Glob(p.config.CoreRepo.Dir + "/Aliases/*")
+	if err != nil {
+		return err
+	}
+
+	matches = append(matches, aliasMatches...)
+
+	for _, path := range matches {
+		log.Println("Reading file: ", path)
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		// Parse Formula from file.
+		sourceFormula, err := parseFromFile(file)
+		if err != nil {
+			log.Printf("Error parsing file %s: %v\n", path, err)
+			return err
+		}
+
+		formula := types.FromSourceFormula(sourceFormula)
+		p.formulas[formula.Name] = formula
+
+		log.Println("Successfully parsed formula:", formula)
+	}
+
+	return nil
+}
+
+func (p *parser) writeFormulas() error {
+	path := filepath.Join(p.config.OutputDir, "deps-brew.tsv")
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	// Close file on function exit and check its' returned error.
+	defer func() error {
+		if err := file.Close(); err != nil {
+			return err
+		}
+		return nil
+	}()
+
+	writer := bufio.NewWriter(file)
+	defer writer.Flush()
+
+	for _, formula := range p.formulas {
+		// Write repo line type.
+		line := formula.FormatRepoLine()
+		_, err := writer.WriteString(line)
+		if err != nil {
+			return err
+		}
+
+		// Write dependency lines.
+		for _, dep := range formula.Dependencies {
+			f := p.formulas[dep.Name]
+			if f == nil {
+				panic("Dependency " + dep.Name + " not found in formula " + formula.Name)
+			}
+
+			line := f.FormatDependencyLine(dep)
+			_, err := writer.WriteString(line)
 			if err != nil {
 				return err
 			}
-			// Skip directories.
-			if info.IsDir() {
-				return nil
-			}
-
-			log.Println("Reading file: ", path)
-
-			file, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
-
-			// Parse Formula from file.
-			sourceFormula, err := parseFromFile(file)
-			if err != nil {
-				log.Printf("Error parsing file %s: %v\n", path, err)
-				return err
-			}
-
-			formula := types.FromSourceFormula(sourceFormula)
-			p.formulas[formula.Name] = formula
-
-			log.Println("Successfully parsed formula:", formula)
-
-			return nil
-		}); err != nil {
-			log.Printf("Error walking directory: %v\n", err)
 		}
 	}
 	return nil
