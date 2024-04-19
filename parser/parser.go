@@ -59,47 +59,32 @@ func (p *parser) Analyze() {
 // ReadFormaulas reads all formulas from the core repository into the formulas map.
 func (p *parser) readFormulas() error {
 	// Match parent directories of the fomula files.
-	matches, err := filepath.Glob(p.config.CoreRepo.Dir + "/Formula/*")
+	matches, err := filepath.Glob(p.config.CoreRepo.Dir + "/Formula/**/*.rb")
 	if err != nil {
 		return err
 	}
 
-	for _, match := range matches {
-		// Walk through the directory to read each file.
-		if err := filepath.Walk(match, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			// Skip directories.
-			if info.IsDir() {
-				return nil
-			}
-
-			log.Println("Reading file: ", path)
-
-			file, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
-
-			// Parse Formula from file.
-			sourceFormula, err := parseFromFile(file)
-			if err != nil {
-				log.Printf("Error parsing file %s: %v\n", path, err)
-				return err
-			}
-
-			formula := types.FromSourceFormula(sourceFormula)
-			p.formulas[formula.Name] = formula
-
-			log.Println("Successfully parsed formula:", formula)
-
-			return nil
-		}); err != nil {
-			log.Printf("Error walking directory: %v\n", err)
+	for _, path := range matches {
+		log.Println("Reading file: ", path)
+		file, err := os.Open(path)
+		if err != nil {
+			return err
 		}
+		defer file.Close()
+
+		// Parse Formula from file.
+		sourceFormula, err := parseFromFile(file)
+		if err != nil {
+			log.Printf("Error parsing file %s: %v\n", path, err)
+			return err
+		}
+
+		formula := types.FromSourceFormula(sourceFormula)
+		p.formulas[formula.Name] = formula
+
+		log.Println("Successfully parsed formula:", formula)
 	}
+
 	return nil
 }
 
