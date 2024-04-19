@@ -58,11 +58,19 @@ func (p *parser) Analyze() {
 
 // ReadFormaulas reads all formulas from the core repository into the formulas map.
 func (p *parser) readFormulas() error {
-	// Match parent directories of the fomula files.
+	// Match the fomula files.
 	matches, err := filepath.Glob(p.config.CoreRepo.Dir + "/Formula/**/*.rb")
 	if err != nil {
 		return err
 	}
+
+	// Match alias formula files.
+	aliasMatches, err := filepath.Glob(p.config.CoreRepo.Dir + "/Aliases/*")
+	if err != nil {
+		return err
+	}
+
+	matches = append(matches, aliasMatches...)
 
 	for _, path := range matches {
 		log.Println("Reading file: ", path)
@@ -117,11 +125,10 @@ func (p *parser) writeFormulas() error {
 		for _, dep := range formula.Dependencies {
 			f := p.formulas[dep.Name]
 			if f == nil {
-				log.Println("Dependency not found:", dep.Name)
-				continue
+				panic("Dependency " + dep.Name + " not found in formula " + formula.Name)
 			}
 
-			line := formula.FormatDependencyLine(dep)
+			line := f.FormatDependencyLine(dep)
 			_, err := writer.WriteString(line)
 			if err != nil {
 				return err

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"main/config"
 	"main/parser"
@@ -44,16 +43,17 @@ func main() {
 
 	parser := parser.NewParser(config)
 
-	start := time.Now()
 	if err := parser.Parse(); err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Duration:", time.Since(start))
+	fmt.Println("Successfully parsed all formulae from the core repository")
 
 	if err := parser.Pipe(); err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Println("Successfully piped all formulae to the output file")
 
 	// parser.Analyze()
 }
