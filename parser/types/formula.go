@@ -46,8 +46,10 @@ func FromSourceFormula(sf *SourceFormula) *Formula {
 		Name:         sf.Name,
 		License:      sf.formatLicense(),
 		Dependencies: sf.Dependencies,
-		ArchiveURL:   sf.URL,
+		ArchiveURL:   sf.Stable.URL,
 	}
+
+	f.Dependencies = append(f.Dependencies, sf.Stable.Dependencies...)
 
 	repoURL, err := sf.extractRepoURL()
 	if err != nil {

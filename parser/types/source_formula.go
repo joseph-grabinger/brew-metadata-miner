@@ -14,8 +14,8 @@ type SourceFormula struct {
 	// Homepage of the formula.
 	Homepage string
 
-	// URL of the formula.
-	URL string
+	// Stable version of the formula.
+	Stable *Stable
 
 	// Mirror of the formula.
 	Mirror string
@@ -31,7 +31,7 @@ type SourceFormula struct {
 }
 
 func (sf *SourceFormula) String() string {
-	return fmt.Sprintf("%s\nHomepage: %s\nURL: %s\nMirror: %s\nLicense: %s\nDependencies: %v\nHead: %v\n", sf.Name, sf.Homepage, sf.URL, sf.Mirror, sf.License, sf.Dependencies, sf.Head)
+	return fmt.Sprintf("%s\nHomepage: %s\nStable: %s\nMirror: %s\nLicense: %s\nDependencies: %v\nHead: %v\n", sf.Name, sf.Homepage, sf.Stable, sf.Mirror, sf.License, sf.Dependencies, sf.Head)
 }
 
 // extractRepoURL returns the repository URL of the formula.
@@ -49,8 +49,8 @@ func (sf *SourceFormula) extractRepoURL() (string, error) {
 		return repoURL, nil
 	}
 
-	if sf.URL != "" {
-		repoURL = sf.URL
+	if sf.Stable != nil && sf.Stable.URL != "" {
+		repoURL = sf.Stable.URL
 	} else if sf.Mirror != "" {
 		repoURL = sf.Mirror
 	} else {

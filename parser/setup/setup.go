@@ -18,8 +18,8 @@ func BuildStrategies(fp delegate.FormulaParser) []delegate.ParseStrategy {
 }
 
 // BuildURLMatcher returns a SingleLineMatcher for the URL field.
-func BuildURLMatcher(fp delegate.FormulaParser) *delegate.SingleLineMatcher[string] {
-	return delegate.NewSLM[string]("url", urlPattern, fp)
+func BuildURLMatcher(fp delegate.FormulaParser) *delegate.MultiLineMatcher[*types.Stable] {
+	return delegate.NewMLM[*types.Stable]("url", urlPattern, fp, isBeginURLSequence, isEndURLSequence, cleanURLSequence)
 }
 
 // BuildMirrorMatcher returns a SingleLineMatcher for the mirror field.

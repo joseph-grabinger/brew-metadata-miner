@@ -23,10 +23,12 @@ var ParseFromFileTests = []struct {
 		expected: &types.SourceFormula{
 			Name:     "i686-elf-gcc",
 			Homepage: "https://gcc.gnu.org",
-			URL:      "https://ftp.gnu.org/gnu/gcc/gcc-13.2.0/gcc-13.2.0.tar.xz",
-			Mirror:   "https://ftpmirror.gnu.org/gcc/gcc-13.2.0/gcc-13.2.0.tar.xz",
-			License:  `"GPL-3.0-or-later" => { with: "GCC-exception-3.1" }`,
-			Head:     nil,
+			Stable: &types.Stable{
+				URL: "https://ftp.gnu.org/gnu/gcc/gcc-13.2.0/gcc-13.2.0.tar.xz",
+			},
+			Mirror:  "https://ftpmirror.gnu.org/gcc/gcc-13.2.0/gcc-13.2.0.tar.xz",
+			License: `"GPL-3.0-or-later" => { with: "GCC-exception-3.1" }`,
+			Head:    nil,
 			Dependencies: []*types.Dependency{
 				{Name: "gmp", DepType: ""},
 				{Name: "i686-elf-binutils", DepType: ""},
@@ -40,10 +42,12 @@ var ParseFromFileTests = []struct {
 		expected: &types.SourceFormula{
 			Name:     "pike",
 			Homepage: "https://pike.lysator.liu.se/",
-			URL:      "https://pike.lysator.liu.se/pub/pike/latest-stable/Pike-v8.0.1738.tar.gz",
-			Mirror:   "http://deb.debian.org/debian/pool/main/p/pike8.0/pike8.0_8.0.1738.orig.tar.gz",
-			License:  `any_of: ["GPL-2.0-only", "LGPL-2.1-only", "MPL-1.1"]`,
-			Head:     nil,
+			Stable: &types.Stable{
+				URL: "https://pike.lysator.liu.se/pub/pike/latest-stable/Pike-v8.0.1738.tar.gz",
+			},
+			Mirror:  "http://deb.debian.org/debian/pool/main/p/pike8.0/pike8.0_8.0.1738.orig.tar.gz",
+			License: `any_of: ["GPL-2.0-only", "LGPL-2.1-only", "MPL-1.1"]`,
+			Head:    nil,
 			Dependencies: []*types.Dependency{
 				{Name: "gettext", DepType: ""},
 				{Name: "gmp", DepType: ""},
@@ -68,10 +72,12 @@ var ParseFromFileTests = []struct {
 		expected: &types.SourceFormula{
 			Name:     "srecord",
 			Homepage: "https://srecord.sourceforge.net/",
-			URL:      "https://downloads.sourceforge.net/project/srecord/srecord/1.64/srecord-1.64.tar.gz",
-			Mirror:   "",
-			License:  `all_of: ["GPL-3.0-or-later", "LGPL-3.0-or-later"]`,
-			Head:     nil,
+			Stable: &types.Stable{
+				URL: "https://downloads.sourceforge.net/project/srecord/srecord/1.64/srecord-1.64.tar.gz",
+			},
+			Mirror:  "",
+			License: `all_of: ["GPL-3.0-or-later", "LGPL-3.0-or-later"]`,
+			Head:    nil,
 			Dependencies: []*types.Dependency{
 				{Name: "boost", DepType: "build"},
 				{Name: "libtool", DepType: "build"},
