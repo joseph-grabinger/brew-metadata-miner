@@ -21,6 +21,7 @@ func cleanHeadSequence(sequence []string) *types.Head {
 			head.URL = matches[1]
 		}
 
+		// TODO use dep_utils.go to clean dependencies OR remove them entirely.
 		// Check for dependencies.
 		regex = regexp.MustCompile(dependencyKeywordPattern)
 		matches = regex.FindStringSubmatch(sequence[i])
