@@ -158,12 +158,14 @@ func parseFromFile(file *os.File) (*types.SourceFormula, error) {
 
 	results, err := formulaParser.ParseFields(fields)
 	if err != nil {
-		log.Panicln("Error parsing fields:", err)
+		log.Println("Error parsing fields:", err)
 		return nil, err
 	}
 
 	// Set the fields of the formula.
-	formula.URL = results["url"].(string)
+	if results["url"] != nil {
+		formula.Stable = results["url"].(*types.Stable)
+	}
 	if results["mirror"] != nil {
 		formula.Mirror = results["mirror"].(string)
 	}

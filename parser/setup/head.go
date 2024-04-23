@@ -6,7 +6,7 @@ import (
 	"main/parser/types"
 )
 
-// cleanHeadSequence returns a cleaned []string from a sequence.
+// cleanHeadSequence returns a cleaned head from a sequence.
 func cleanHeadSequence(sequence []string) *types.Head {
 	if len(sequence) == 1 {
 		return &types.Head{URL: sequence[0]}
@@ -51,6 +51,6 @@ func isBeginHeadSequence(line string) bool {
 // isEndHeadSequence returns true if the given line
 // is the end of a head sequence.
 func isEndHeadSequence(line string) bool {
-	regex := regexp.MustCompile(endHeadPattern)
+	regex := regexp.MustCompile(endPattern(2))
 	return regex.MatchString(line)
 }
