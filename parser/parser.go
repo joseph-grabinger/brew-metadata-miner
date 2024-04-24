@@ -3,9 +3,11 @@ package parser
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"main/config"
@@ -185,5 +187,56 @@ func parseFromFile(file *os.File) (*types.SourceFormula, error) {
 		return nil, err
 	}
 
+	// Check if the stable url contains a Ruby string interpolation and resolve it.
+	// This is done here rather then in the cleanURLSequence function because the
+	// variable used for the interpolation can have a global scope in the formula file.
+	// The cleanURLSequence function could only resolve interpolations with a scope of the stable do block.
+	found, resolved, err := checkForInterpolation(formula.Stable.URL, file)
+	if err != nil {
+		return nil, err
+	}
+	if found {
+		formula.Stable.URL = resolved
+	}
+
 	return formula, nil
+}
+
+// checkForInterpolation checks if the given url contains a Ruby string interpolation.
+// If it does, the interpolation is resolved using the given file.
+// The function returns a boolean indicating if an interpolation was found and the resolved string.
+func checkForInterpolation(url string, file *os.File) (bool, string, error) {
+	regex := regexp.MustCompile(setup.InterpolationPattern)
+	matches := regex.FindStringSubmatch(url)
+	if len(matches) < 2 {
+		return false, "", nil
+	}
+
+	varName := matches[1]
+
+	// Seek the beginning of the file.
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return true, "", err
+	}
+
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		// Check if the line contains the variable assignment.
+		regex := regexp.MustCompile(setup.VarAssignmentPattern(varName))
+		varMatches := regex.FindStringSubmatch(line)
+		if len(varMatches) >= 2 {
+			// Replace the interpolation with the variable value.
+			resolved := strings.Replace(url, fmt.Sprintf("#{%s}", varName), varMatches[1], 1)
+			return true, resolved, nil
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return true, "", err
+	}
+
+	return true, "", fmt.Errorf("could not resolve interpolation in URL: %s", url)
 }

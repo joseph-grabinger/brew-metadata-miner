@@ -148,8 +148,24 @@ const (
 	// endPatternGeneric matches a line beginning with two or more whitespace characters,
 	// followed by the literal string "end".
 	endPatternGeneric = `^(\s{2,})end`
+
+	// InterpolationPattern matches a sequence beginning with the literal "#{",
+	// followed by one or more characters that are not the closing "}" character,
+	// which is captured, and ending with the "}" character.
+	// This extracts a variable used for Ruby string interpolation.
+	InterpolationPattern = `#\{([^}]+)\}`
 )
 
+// endPattern returns a RegEx pattern matching a sequence beginning with
+// the number of given leadingSpaces, followed by the literal string "end".
 func endPattern(leadingSpaces int) string {
 	return fmt.Sprintf(`^\s{%d}end`, leadingSpaces)
+}
+
+// VarAssignmentPattern returns a RegEx pattern matching a sequence beggining with
+// two or more whitespace characters, followed by the given varName,
+// followed by an assignment ("=" character) and a string enclosed in qutotes,
+// which is captured.
+func VarAssignmentPattern(varName string) string {
+	return fmt.Sprintf(`^\s{2,}%s\s+=\s+"([^"]+)"`, varName)
 }

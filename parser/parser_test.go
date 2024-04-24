@@ -87,6 +87,27 @@ var ParseFromFileTests = []struct {
 			},
 		},
 	},
+	{
+		inputFilePath: "../tmp/homebrew-core/Formula/g/geckodriver.rb",
+		expected: &types.SourceFormula{
+			Name:     "geckodriver",
+			Homepage: "https://github.com/mozilla/geckodriver",
+			Stable: &types.Stable{
+				URL:          "https://hg.mozilla.org/mozilla-central/archive/bc25087baba17c78246db06bcab71c299fd8f46f.zip/testing/geckodriver/",
+				Dependencies: []*types.Dependency{},
+			},
+			Mirror:  "",
+			License: `"MPL-2.0"`,
+			Head: &types.Head{
+				URL: "https://hg.mozilla.org/mozilla-central/",
+			},
+			Dependencies: []*types.Dependency{
+				{Name: "rust", DepType: "build"},
+				{Name: "netcat", DepType: "test", SystemRequirement: "linux"},
+				{Name: "unzip", DepType: "", SystemRequirement: "linux"},
+			},
+		},
+	},
 }
 
 func TestParseFromFile(t *testing.T) {
