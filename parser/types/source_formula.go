@@ -24,29 +24,29 @@ type SourceFormula struct {
 	License string
 
 	// List of the formula's Dependencies.
-	Dependencies []*Dependency
+	Dependencies *Dependencies
 
 	// Head of the formula.
 	Head *Head
 }
 
 func (sf *SourceFormula) String() string {
-	return fmt.Sprintf("%s\nHomepage: %s\nStable: %s\nMirror: %s\nLicense: %s\nDependencies: %v\nHead: %v\n", sf.Name, sf.Homepage, sf.Stable, sf.Mirror, sf.License, sf.Dependencies, sf.Head)
+	return fmt.Sprintf("%s\nHomepage: %s\nStable: %s\nMirror: %s\nLicense: %s\nDependencies: %v\nHead: %v", sf.Name, sf.Homepage, sf.Stable, sf.Mirror, sf.License, sf.Dependencies, sf.Head)
 }
 
 // extractRepoURL returns the repository URL of the formula.
 // It therfore inspects the URL, mirror and homepage fields of the formula.
-func (sf *SourceFormula) extractRepoURL() (string, error) {
+func (sf *SourceFormula) extractRepoURL() string {
 	var repoURL string
 
 	// Use head if it exists.
 	if sf.Head != nil {
-		return sf.Head.URL, nil
+		return sf.Head.URL
 	}
 
 	// Check homepage for known repository hosts.
 	if m, repoURL := matchesKnownGitRepoHost(sf.Homepage); m {
-		return repoURL, nil
+		return repoURL
 	}
 
 	if sf.Stable != nil && sf.Stable.URL != "" {
@@ -54,23 +54,22 @@ func (sf *SourceFormula) extractRepoURL() (string, error) {
 	} else if sf.Mirror != "" {
 		repoURL = sf.Mirror
 	} else {
-		// Use homepage as fallback.
-		repoURL = sf.Homepage
+		return ""
 	}
 
 	if m, cleandedURL := matchesKnownGitRepoHost(repoURL); m {
-		return cleandedURL, nil
+		return cleandedURL
 	}
 
 	if m, cleandedURL := matchesKnownGitArchiveHost(repoURL); m {
-		return cleandedURL, nil
+		return cleandedURL
 	}
 
 	if strings.HasSuffix(repoURL, ".git") {
-		return repoURL, nil
+		return repoURL
 	}
 
-	return "", fmt.Errorf("no repository URL found for formula: %s, repoURL: %s", sf.Name, repoURL)
+	return ""
 }
 
 func (sf *SourceFormula) formatLicense() string {

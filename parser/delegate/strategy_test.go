@@ -26,8 +26,10 @@ var MlmUrlTests = []struct {
   end`, // pce.rb
 		expected: &types.Stable{
 			URL: "http://www.hampa.ch/pub/pce/pce-0.2.2.tar.gz",
-			Dependencies: []*types.Dependency{
-				{Name: "sdl12-compat", DepType: ""},
+			Dependencies: &types.Dependencies{
+				Lst: []*types.Dependency{
+					{Name: "sdl12-compat", DepType: ""},
+				},
 			},
 		},
 	},
@@ -45,8 +47,10 @@ var MlmUrlTests = []struct {
   end
 	  `, // action-validator.rb
 		expected: &types.Stable{
-			URL:          "https://github.com/mpalmer/action-validator/archive/refs/tags/v0.6.0.tar.gz",
-			Dependencies: []*types.Dependency{},
+			URL: "https://github.com/mpalmer/action-validator/archive/refs/tags/v0.6.0.tar.gz",
+			Dependencies: &types.Dependencies{
+				Lst: []*types.Dependency{},
+			},
 		},
 	},
 	{
@@ -64,8 +68,10 @@ var MlmUrlTests = []struct {
   end
 		`, // ghostscript.rb
 		expected: &types.Stable{
-			URL:          "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10030/ghostpdl-10.03.0.tar.xz",
-			Dependencies: []*types.Dependency{},
+			URL: "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10030/ghostpdl-10.03.0.tar.xz",
+			Dependencies: &types.Dependencies{
+				Lst: []*types.Dependency{},
+			},
 		},
 	},
 	{
@@ -116,9 +122,11 @@ var MlmUrlTests = []struct {
   end`, // neko.rb
 		expected: &types.Stable{
 			URL: "https://github.com/HaxeFoundation/neko/archive/refs/tags/v2-3-0/neko-2.3.0.tar.gz",
-			Dependencies: []*types.Dependency{
-				{Name: "pcre", DepType: ""},
-				{Name: "gtk+", DepType: "", SystemRequirement: "linux"},
+			Dependencies: &types.Dependencies{
+				Lst: []*types.Dependency{
+					{Name: "pcre", DepType: ""},
+					{Name: "gtk+", DepType: "", Restriction: "linux"},
+				},
 			},
 		},
 	},
@@ -136,8 +144,10 @@ var MlmUrlTests = []struct {
     end
   end`, // unisonlang.rb
 		expected: &types.Stable{
-			URL:          "https://github.com/unisonweb/unison/tree/release/M5j",
-			Dependencies: []*types.Dependency{},
+			URL: "https://github.com/unisonweb/unison/tree/release/M5j",
+			Dependencies: &types.Dependencies{
+				Lst: []*types.Dependency{},
+			},
 		},
 	},
 	{
@@ -150,6 +160,36 @@ var MlmUrlTests = []struct {
   revision 2`, // icecast.rb
 		expected: &types.Stable{
 			URL: "https://downloads.xiph.org/releases/icecast/icecast-2.4.4.tar.gz",
+		},
+	},
+	{
+		input: `stable do
+    url "https://github.com/chakra-core/ChakraCore/archive/refs/tags/v1.11.24.tar.gz"
+    sha256 "b99e85f2d0fa24f2b6ccf9a6d2723f3eecfe986a9d2c4d34fa1fd0d015d0595e"
+
+    depends_on arch: :x86_64 # https://github.com/chakra-core/ChakraCore/issues/6860
+
+    # Fix build with modern compilers.
+    # Remove with 1.12.
+    patch do
+      url "https://raw.githubusercontent.com/Homebrew/formula-patches/204ce95fb69a2cd523ccb0f392b7cce4f791273a/chakra/clang10.patch"
+      sha256 "5337b8d5de2e9b58f6908645d9e1deb8364d426628c415e0e37aa3288fae3de7"
+    end
+
+    # Support Python 3.
+    # Remove with 1.12.
+    patch do
+      url "https://raw.githubusercontent.com/Homebrew/formula-patches/308bb29254605f0c207ea4ed67f049fdfe5ec92c/chakra/python3.patch"
+      sha256 "61c61c5376bc28ac52ec47e6d4c053eb27c04860aa4ba787a78266840ce57830"
+    end
+  end
+	`,
+		expected: &types.Stable{
+			URL: "https://github.com/chakra-core/ChakraCore/archive/refs/tags/v1.11.24.tar.gz",
+			Dependencies: &types.Dependencies{
+				Lst:                []*types.Dependency{},
+				SystemRequirements: "x86_64",
+			},
 		},
 	},
 }
@@ -182,7 +222,7 @@ func TestMultiLineMatcherURL(t *testing.T) {
 
 var MlmDependencyTests = []struct {
 	input    string
-	expected []*types.Dependency
+	expected *types.Dependencies
 }{
 	{
 		input: `  depends_on "pkg-config" => :build
@@ -194,11 +234,13 @@ var MlmDependencyTests = []struct {
 		end
 		
 		def install`, // pinentry.rb
-		expected: []*types.Dependency{
-			{Name: "pkg-config", DepType: "build", SystemRequirement: ""},
-			{Name: "libassuan", DepType: "", SystemRequirement: ""},
-			{Name: "libgpg-error", DepType: "", SystemRequirement: ""},
-			{Name: "libsecret", DepType: "", SystemRequirement: "linux"}, // on_linux
+		expected: &types.Dependencies{
+			Lst: []*types.Dependency{
+				{Name: "pkg-config", DepType: "build", Restriction: ""},
+				{Name: "libassuan", DepType: "", Restriction: ""},
+				{Name: "libgpg-error", DepType: "", Restriction: ""},
+				{Name: "libsecret", DepType: "", Restriction: "linux"}, // on_linux
+			},
 		},
 	},
 	{
@@ -216,11 +258,13 @@ var MlmDependencyTests = []struct {
 		# Apply upstream commit to fix build with newer GCC.
 		# Remove with next release.
 		patch do`, // libdill.rb
-		expected: []*types.Dependency{
-			{Name: "autoconf", DepType: "build", SystemRequirement: ""},
-			{Name: "automake", DepType: "build", SystemRequirement: ""},
-			{Name: "libtool", DepType: "build", SystemRequirement: ""},
-			{Name: "llvm", DepType: "test", SystemRequirement: "arm"}, // on_arm
+		expected: &types.Dependencies{
+			Lst: []*types.Dependency{
+				{Name: "autoconf", DepType: "build", Restriction: ""},
+				{Name: "automake", DepType: "build", Restriction: ""},
+				{Name: "libtool", DepType: "build", Restriction: ""},
+				{Name: "llvm", DepType: "test", Restriction: "arm"}, // on_arm
+			},
 		},
 	},
 	{
@@ -243,15 +287,17 @@ var MlmDependencyTests = []struct {
 		end
 	  
 		def install`, // grafana.rb
-		expected: []*types.Dependency{
-			{Name: "go", DepType: "build", SystemRequirement: ""},
-			{Name: "node", DepType: "build", SystemRequirement: ""},
-			{Name: "yarn", DepType: "build", SystemRequirement: ""},
-			{Name: "python", DepType: "build", SystemRequirement: "linux, macos: < catalina"},           // uses_from_macos
-			{Name: "zlib", DepType: "", SystemRequirement: "linux"},                                     // uses_from_macos
-			{Name: "python-setuptools", DepType: "build", SystemRequirement: "linux, macos: <= mojave"}, // on_system
-			{Name: "fontconfig", DepType: "", SystemRequirement: "linux"},                               // on_linux
-			{Name: "freetype", DepType: "", SystemRequirement: "linux"},                                 // on_linux
+		expected: &types.Dependencies{
+			Lst: []*types.Dependency{
+				{Name: "go", DepType: "build", Restriction: ""},
+				{Name: "node", DepType: "build", Restriction: ""},
+				{Name: "yarn", DepType: "build", Restriction: ""},
+				{Name: "python", DepType: "build", Restriction: "linux, macos: < catalina"},           // uses_from_macos
+				{Name: "zlib", DepType: "", Restriction: "linux"},                                     // uses_from_macos
+				{Name: "python-setuptools", DepType: "build", Restriction: "linux, macos: <= mojave"}, // on_system
+				{Name: "fontconfig", DepType: "", Restriction: "linux"},                               // on_linux
+				{Name: "freetype", DepType: "", Restriction: "linux"},                                 // on_linux
+			},
 		},
 	},
 	{
@@ -271,15 +317,17 @@ var MlmDependencyTests = []struct {
 		end
 	  
 		def install`, // lastpass-cli.rb
-		expected: []*types.Dependency{
-			{Name: "asciidoc", DepType: "build", SystemRequirement: ""},
-			{Name: "cmake", DepType: "build", SystemRequirement: ""},
-			{Name: "docbook-xsl", DepType: "build", SystemRequirement: ""},
-			{Name: "pkg-config", DepType: "build", SystemRequirement: ""},
-			{Name: "openssl@3", DepType: "", SystemRequirement: ""},
-			{Name: "pinentry", DepType: "", SystemRequirement: ""},
-			{Name: "curl", DepType: "", SystemRequirement: "linux, macos: >= mojave"}, // uses_from_macos & on_mojave
-			{Name: "libxslt", DepType: "", SystemRequirement: "linux"},                // uses_from_macos
+		expected: &types.Dependencies{
+			Lst: []*types.Dependency{
+				{Name: "asciidoc", DepType: "build", Restriction: ""},
+				{Name: "cmake", DepType: "build", Restriction: ""},
+				{Name: "docbook-xsl", DepType: "build", Restriction: ""},
+				{Name: "pkg-config", DepType: "build", Restriction: ""},
+				{Name: "openssl@3", DepType: "", Restriction: ""},
+				{Name: "pinentry", DepType: "", Restriction: ""},
+				{Name: "curl", DepType: "", Restriction: "linux, macos: >= mojave"}, // uses_from_macos & on_mojave
+				{Name: "libxslt", DepType: "", Restriction: "linux"},                // uses_from_macos
+			},
 		},
 	},
 	{
@@ -301,9 +349,12 @@ var MlmDependencyTests = []struct {
 	
 	  # -ftree-loop-vectorize -flto=12 -s
 	  fails_with :clang do`, // btop.rb
-		expected: []*types.Dependency{
-			{Name: "coreutils", DepType: "build", SystemRequirement: "macos"},                      // on_macos
-			{Name: "gcc", DepType: "", SystemRequirement: "(macos, (macos, arm)), macos: ventura"}, // on_macos & on_macos, on_arm & on_ventura
+		expected: &types.Dependencies{
+			Lst: []*types.Dependency{
+				{Name: "coreutils", DepType: "build", Restriction: "macos"},                      // on_macos
+				{Name: "gcc", DepType: "", Restriction: "(macos, (macos, arm)), macos: ventura"}, // on_macos & on_macos, on_arm & on_ventura
+			},
+			SystemRequirements: "macos >= ventura (or linux)",
 		},
 	},
 	{
@@ -327,13 +378,15 @@ var MlmDependencyTests = []struct {
 		end
 	  
 		fails_with gcc: "5"`, // emscripten.rb
-		expected: []*types.Dependency{
-			{Name: "cmake", DepType: "build", SystemRequirement: ""},
-			{Name: "node", DepType: "", SystemRequirement: ""},
-			{Name: "python@3.12", DepType: "", SystemRequirement: ""},
-			{Name: "yuicompressor", DepType: "", SystemRequirement: ""},
-			{Name: "zlib", DepType: "", SystemRequirement: "linux"},                  // uses_from_macos
-			{Name: "openjdk", DepType: "", SystemRequirement: "(macos, arm), linux"}, // uses_from_macos
+		expected: &types.Dependencies{
+			Lst: []*types.Dependency{
+				{Name: "cmake", DepType: "build", Restriction: ""},
+				{Name: "node", DepType: "", Restriction: ""},
+				{Name: "python@3.12", DepType: "", Restriction: ""},
+				{Name: "yuicompressor", DepType: "", Restriction: ""},
+				{Name: "zlib", DepType: "", Restriction: "linux"},                  // uses_from_macos
+				{Name: "openjdk", DepType: "", Restriction: "(macos, arm), linux"}, // uses_from_macos
+			},
 		},
 	},
 	{
@@ -354,11 +407,13 @@ var MlmDependencyTests = []struct {
 	  
 		# Backport fix for build error with Rust 1.71.0. Remove in the next release.
 		patch do`, // grin-wallet.rb
-		expected: []*types.Dependency{
-			{Name: "rust", DepType: "build", SystemRequirement: ""},
-			{Name: "llvm@15", DepType: "build", SystemRequirement: "macos, linux"}, // on_macos & on_linux
-			{Name: "pkg-config", DepType: "build", SystemRequirement: "linux"},     // on_linux
-			{Name: "openssl@3", DepType: "", SystemRequirement: "linux"},           // on_linux
+		expected: &types.Dependencies{
+			Lst: []*types.Dependency{
+				{Name: "rust", DepType: "build", Restriction: ""},
+				{Name: "llvm@15", DepType: "build", Restriction: "macos, linux"}, // on_macos & on_linux
+				{Name: "pkg-config", DepType: "build", Restriction: "linux"},     // on_linux
+				{Name: "openssl@3", DepType: "", Restriction: "linux"},           // on_linux
+			},
 		},
 	},
 	{
@@ -374,10 +429,55 @@ var MlmDependencyTests = []struct {
 		end
 	  end
 	  def install`, // pseudo
-		expected: []*types.Dependency{
-			{Name: "gettext", DepType: "build", SystemRequirement: "macos, arm"},
-			{Name: "babl", DepType: "test", SystemRequirement: "macos, arm, macos: mojave"},
-			{Name: "getmail", DepType: "build", SystemRequirement: "macos, intel"},
+		expected: &types.Dependencies{
+			Lst: []*types.Dependency{
+				{Name: "gettext", DepType: "build", Restriction: "macos, arm"},
+				{Name: "babl", DepType: "test", Restriction: "macos, arm, macos: mojave"},
+				{Name: "getmail", DepType: "build", Restriction: "macos, intel"},
+			},
+		},
+	},
+	{
+		input: `  depends_on xcode: ["15.0", :build]
+		depends_on arch: :arm64
+		depends_on :macos
+		depends_on macos: :ventura
+		uses_from_macos "swift"
+
+		def install`, // whisperkit-cli.rb
+		expected: &types.Dependencies{
+			Lst: []*types.Dependency{
+				{Name: "swift", DepType: "", Restriction: "linux"}, // uses_from_macos
+			},
+			SystemRequirements: `xcode >= 15.0 build (on macos), arm64, macos, macos >= ventura (or linux)`,
+		},
+	},
+	{
+		input: `  depends_on "autoconf" => :build
+		depends_on "automake" => :build
+		depends_on "cmake" => :build
+		depends_on "libtool" => :build
+		depends_on "pkg-config" => :build
+		depends_on "openssl@3"
+		depends_on "python@3.12"
+	  
+		on_macos do
+		  depends_on xcode: :build
+		  depends_on macos: :catalina
+		end
+	  
+		def install`, // retdec.rb
+		expected: &types.Dependencies{
+			Lst: []*types.Dependency{
+				{Name: "autoconf", DepType: "build", Restriction: ""},
+				{Name: "automake", DepType: "build", Restriction: ""},
+				{Name: "cmake", DepType: "build", Restriction: ""},
+				{Name: "libtool", DepType: "build", Restriction: ""},
+				{Name: "pkg-config", DepType: "build", Restriction: ""},
+				{Name: "openssl@3", DepType: "", Restriction: ""},
+				{Name: "python@3.12", DepType: "", Restriction: ""},
+			},
+			SystemRequirements: `xcode build (on macos), macos >= catalina (or linux)`,
 		},
 	},
 }
@@ -399,14 +499,15 @@ func TestMultiLineMatcherDependencies(t *testing.T) {
 					log.Fatal(err)
 				}
 
-				dependencies := make([]*types.Dependency, 0)
+				dependencies := &types.Dependencies{}
 				if fieldValue != nil {
-					dependencies = fieldValue.([]*types.Dependency)
+					dependencies = fieldValue.(*types.Dependencies)
 				}
 
 				log.Println("Matched: ", dependencies)
 
-				assert.ElementsMatch(t, test.expected, dependencies, "expected: %v, got: %v", test.expected, dependencies)
+				assert.ElementsMatch(t, test.expected.Lst, dependencies.Lst, "expected: %v, got: %v", test.expected.Lst, dependencies.Lst)
+				assert.Equal(t, test.expected.SystemRequirements, dependencies.SystemRequirements, "expected: %v, got: %v", test.expected.SystemRequirements, dependencies.SystemRequirements)
 				break
 			}
 		}

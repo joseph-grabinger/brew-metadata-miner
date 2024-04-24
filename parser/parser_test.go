@@ -29,11 +29,13 @@ var ParseFromFileTests = []struct {
 			Mirror:  "https://ftpmirror.gnu.org/gcc/gcc-13.2.0/gcc-13.2.0.tar.xz",
 			License: `"GPL-3.0-or-later" => { with: "GCC-exception-3.1" }`,
 			Head:    nil,
-			Dependencies: []*types.Dependency{
-				{Name: "gmp", DepType: ""},
-				{Name: "i686-elf-binutils", DepType: ""},
-				{Name: "libmpc", DepType: ""},
-				{Name: "mpfr", DepType: ""},
+			Dependencies: &types.Dependencies{
+				Lst: []*types.Dependency{
+					{Name: "gmp", DepType: ""},
+					{Name: "i686-elf-binutils", DepType: ""},
+					{Name: "libmpc", DepType: ""},
+					{Name: "mpfr", DepType: ""},
+				},
 			},
 		},
 	},
@@ -48,22 +50,24 @@ var ParseFromFileTests = []struct {
 			Mirror:  "http://deb.debian.org/debian/pool/main/p/pike8.0/pike8.0_8.0.1738.orig.tar.gz",
 			License: `any_of: ["GPL-2.0-only", "LGPL-2.1-only", "MPL-1.1"]`,
 			Head:    nil,
-			Dependencies: []*types.Dependency{
-				{Name: "gettext", DepType: ""},
-				{Name: "gmp", DepType: ""},
-				{Name: "jpeg-turbo", DepType: ""},
-				{Name: "libtiff", DepType: ""},
-				{Name: "nettle", DepType: ""},
-				{Name: "pcre", DepType: ""},
-				{Name: "webp", DepType: ""},
-				{Name: "bzip2", DepType: "", SystemRequirement: "linux"},     // on_linux
-				{Name: "krb5", DepType: "", SystemRequirement: "linux"},      // on_linux
-				{Name: "libxcrypt", DepType: "", SystemRequirement: "linux"}, // on_linux
-				// {Name: "libxslt", DepType: ""},      // on_linux
-				{Name: "sqlite", DepType: "", SystemRequirement: "linux"},       // on_linux
-				{Name: "zlib", DepType: "", SystemRequirement: "linux"},         // on_linux
-				{Name: "gnu-sed", DepType: "build", SystemRequirement: "macos"}, // on_macos
-				{Name: "libnsl", DepType: "", SystemRequirement: "linux"},       // on_linux
+			Dependencies: &types.Dependencies{
+				Lst: []*types.Dependency{
+					{Name: "gettext", DepType: ""},
+					{Name: "gmp", DepType: ""},
+					{Name: "jpeg-turbo", DepType: ""},
+					{Name: "libtiff", DepType: ""},
+					{Name: "nettle", DepType: ""},
+					{Name: "pcre", DepType: ""},
+					{Name: "webp", DepType: ""},
+					{Name: "bzip2", DepType: "", Restriction: "linux"},     // on_linux
+					{Name: "krb5", DepType: "", Restriction: "linux"},      // on_linux
+					{Name: "libxcrypt", DepType: "", Restriction: "linux"}, // on_linux
+					// {Name: "libxslt", DepType: ""},      // on_linux
+					{Name: "sqlite", DepType: "", Restriction: "linux"},       // on_linux
+					{Name: "zlib", DepType: "", Restriction: "linux"},         // on_linux
+					{Name: "gnu-sed", DepType: "build", Restriction: "macos"}, // on_macos
+					{Name: "libnsl", DepType: "", Restriction: "linux"},       // on_linux
+				},
 			},
 		},
 	},
@@ -78,12 +82,14 @@ var ParseFromFileTests = []struct {
 			Mirror:  "",
 			License: `all_of: ["GPL-3.0-or-later", "LGPL-3.0-or-later"]`,
 			Head:    nil,
-			Dependencies: []*types.Dependency{
-				{Name: "boost", DepType: "build"},
-				{Name: "libtool", DepType: "build"},
-				{Name: "libgcrypt", DepType: ""},
-				{Name: "ghostscript", DepType: "build", SystemRequirement: "macos: >= sonoma, linux"}, // on_sonoma :or_newer && on_linux
-				{Name: "groff", DepType: "build", SystemRequirement: "macos: >= ventura, linux"},      // on_ventura :or_newer && on_linux
+			Dependencies: &types.Dependencies{
+				Lst: []*types.Dependency{
+					{Name: "boost", DepType: "build"},
+					{Name: "libtool", DepType: "build"},
+					{Name: "libgcrypt", DepType: ""},
+					{Name: "ghostscript", DepType: "build", Restriction: "macos: >= sonoma, linux"}, // on_sonoma :or_newer && on_linux
+					{Name: "groff", DepType: "build", Restriction: "macos: >= ventura, linux"},      // on_ventura :or_newer && on_linux
+				},
 			},
 		},
 	},
@@ -93,18 +99,22 @@ var ParseFromFileTests = []struct {
 			Name:     "geckodriver",
 			Homepage: "https://github.com/mozilla/geckodriver",
 			Stable: &types.Stable{
-				URL:          "https://hg.mozilla.org/mozilla-central/archive/bc25087baba17c78246db06bcab71c299fd8f46f.zip/testing/geckodriver/",
-				Dependencies: []*types.Dependency{},
+				URL: "https://hg.mozilla.org/mozilla-central/archive/bc25087baba17c78246db06bcab71c299fd8f46f.zip/testing/geckodriver/",
+				Dependencies: &types.Dependencies{
+					Lst: []*types.Dependency{},
+				},
 			},
 			Mirror:  "",
 			License: `"MPL-2.0"`,
 			Head: &types.Head{
 				URL: "https://hg.mozilla.org/mozilla-central/",
 			},
-			Dependencies: []*types.Dependency{
-				{Name: "rust", DepType: "build"},
-				{Name: "netcat", DepType: "test", SystemRequirement: "linux"},
-				{Name: "unzip", DepType: "", SystemRequirement: "linux"},
+			Dependencies: &types.Dependencies{
+				Lst: []*types.Dependency{
+					{Name: "rust", DepType: "build"},
+					{Name: "netcat", DepType: "test", Restriction: "linux"},
+					{Name: "unzip", DepType: "", Restriction: "linux"},
+				},
 			},
 		},
 	},
@@ -123,7 +133,8 @@ func TestParseFromFile(t *testing.T) {
 			log.Fatal(err)
 		}
 
-		assert.ElementsMatch(t, test.expected.Dependencies, formula.Dependencies, "expected: %v, got: %v", test.expected.Dependencies, formula.Dependencies)
+		assert.ElementsMatch(t, test.expected.Dependencies.Lst, formula.Dependencies.Lst, "expected: %v, got: %v", test.expected.Dependencies.Lst, formula.Dependencies.Lst)
+		assert.Equal(t, test.expected.Dependencies.SystemRequirements, formula.Dependencies.SystemRequirements, "expected: %v, got: %v", test.expected.Dependencies.SystemRequirements, formula.Dependencies.SystemRequirements)
 		test.expected.Dependencies, formula.Dependencies = nil, nil
 		assert.Equal(t, test.expected, formula, "expected: %v, got: %v", test.expected, formula)
 	}

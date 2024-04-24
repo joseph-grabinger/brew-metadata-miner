@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"log"
 )
 
 // Formula represents a formula from the brew package manager.
@@ -21,10 +20,13 @@ type Formula struct {
 
 	// A list of the formula's dependencies.
 	Dependencies []*Dependency
+
+	// System requirement of the formula.
+	SystemRequirement string
 }
 
 func (f *Formula) String() string {
-	return fmt.Sprintf("%s\nRepo: %s\nArchive: %s\nLicense: %s\nDependencies: %v\n", f.Name, f.RepoURL, f.ArchiveURL, f.License, f.Dependencies)
+	return fmt.Sprintf("%s\nRepo: %s\nArchive: %s\nLicense: %s\nDependencies: %v\nSystemRequirements: %s\n", f.Name, f.RepoURL, f.ArchiveURL, f.License, f.Dependencies, f.SystemRequirement)
 }
 
 // FormatRepoLine formats the formula as a repository line.
@@ -36,28 +38,39 @@ func (f *Formula) FormatRepoLine() string {
 // FormatDependencyLine formats the formula as a dependency line.
 // `1,"<license>","<namespace>/<username>/<repository>","<stablearchiveurl>","<type>","<packagemanager>","<name>","<systemrestriction>"`
 func (f *Formula) FormatDependencyLine(dep *Dependency) string {
-	return fmt.Sprintf("1\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\n", f.License, f.RepoURL, f.ArchiveURL, dep.DepType, "brew", dep.Name, dep.SystemRequirement)
+	return fmt.Sprintf("1\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\n", f.License, f.RepoURL, f.ArchiveURL, dep.DepType, "brew", dep.Name, dep.Restriction)
 }
 
 // fromSourceFormula creates a formula from a source formula and evaluates the reopURL.
 // It returns a pointer to the newly created formula.
 func FromSourceFormula(sf *SourceFormula) *Formula {
 	f := &Formula{
-		Name:         sf.Name,
-		License:      sf.formatLicense(),
-		Dependencies: sf.Dependencies,
-		ArchiveURL:   sf.Stable.URL,
+		Name:       sf.Name,
+		License:    sf.formatLicense(),
+		ArchiveURL: sf.Stable.URL,
 	}
 
-	f.Dependencies = append(f.Dependencies, sf.Stable.Dependencies...)
-
-	repoURL, err := sf.extractRepoURL()
-	if err != nil {
-		log.Println(err)
-		repoURL = ""
+	if sf.Dependencies != nil {
+		f.Dependencies = sf.Dependencies.Lst
+		f.SystemRequirement = sf.Dependencies.SystemRequirements
+	} else {
+		f.Dependencies = []*Dependency{}
 	}
 
-	f.RepoURL = repoURL
+	if sf.Stable.Dependencies != nil {
+		f.Dependencies = append(f.Dependencies, sf.Stable.Dependencies.Lst...)
+
+		if sf.Stable.Dependencies.SystemRequirements != "" {
+			if f.SystemRequirement != "" {
+				// Join the system requirements.
+				f.SystemRequirement = fmt.Sprintf("%s, %s", f.SystemRequirement, sf.Stable.Dependencies.SystemRequirements)
+			} else {
+				f.SystemRequirement = sf.Stable.Dependencies.SystemRequirements
+			}
+		}
+	}
+
+	f.RepoURL = sf.extractRepoURL()
 
 	return f
 }

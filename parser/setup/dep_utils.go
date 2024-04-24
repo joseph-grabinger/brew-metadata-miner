@@ -18,20 +18,20 @@ type dependecySet map[string]*types.Dependency
 func (s dependecySet) add(dep *types.Dependency) {
 	id := dep.Id()
 	if d, ok := s[id]; ok {
-		// Merge the dependency`s system requirements.
-		log.Println("Merging system requirements for: ", dep.Name)
-		if dep.SystemRequirement == "" || d.SystemRequirement == "" {
+		// Merge the dependency`s system restrictions.
+		log.Println("Merging system restirctions for: ", dep.Name)
+		if dep.Restriction == "" || d.Restriction == "" {
 			return
 		}
 
-		if strings.Contains(dep.SystemRequirement, ", ") {
-			dep.SystemRequirement = fmt.Sprintf("(%s)", dep.SystemRequirement)
+		if strings.Contains(dep.Restriction, ", ") {
+			dep.Restriction = fmt.Sprintf("(%s)", dep.Restriction)
 		}
-		if strings.Contains(d.SystemRequirement, ", ") {
-			d.SystemRequirement = fmt.Sprintf("(%s)", d.SystemRequirement)
+		if strings.Contains(d.Restriction, ", ") {
+			d.Restriction = fmt.Sprintf("(%s)", d.Restriction)
 		}
 
-		d.SystemRequirement = strings.Join([]string{d.SystemRequirement, dep.SystemRequirement}, ", ")
+		d.Restriction = strings.Join([]string{d.Restriction, dep.Restriction}, ", ")
 		return
 	}
 	s[id] = dep
@@ -68,8 +68,9 @@ func (s skips) shouldSkip(line string) (bool, *skipSequence) {
 // cleanDepSequence returns a cleaned slice of dependencies from a given sequence.
 // The provided skips is used to skip certain lines.
 // The numIgnoreEmpty is number of empty stack pops to ignore.
-func cleanDepSequence(sequence []string, skips skips, numIgnoreEmpty int) []*types.Dependency {
-	reqStack := stack.New[string]()
+func cleanDepSequence(sequence []string, skips skips, numIgnoreEmpty int) *types.Dependencies {
+	depResStack := stack.New[string]()     // Holds the dependecy restirctions.
+	formulaReqStack := stack.New[string]() // Holds the formula requirements.
 	set := make(dependecySet, 0)
 	var skip *skipSequence
 	for i := range sequence {
@@ -96,14 +97,14 @@ func cleanDepSequence(sequence []string, skips skips, numIgnoreEmpty int) []*typ
 			// TODO check if doable in one step
 			depType := getDepType(sequence[i])
 
-			req := "linux"
+			res := "linux"
 			if since := getOSRestriction(sequence[i]); since != "" {
-				req += ", macos: < " + since
+				res += ", macos: < " + since
 			}
 			set.add(&types.Dependency{
-				Name:              nameMatches[1],
-				DepType:           depType,
-				SystemRequirement: req,
+				Name:        nameMatches[1],
+				DepType:     depType,
+				Restriction: res,
 			})
 
 			continue
@@ -112,7 +113,7 @@ func cleanDepSequence(sequence []string, skips skips, numIgnoreEmpty int) []*typ
 		// Check for end.
 		regex = regexp.MustCompile(endPatternGeneric)
 		if regex.MatchString(sequence[i]) {
-			_, err := reqStack.Pop()
+			_, err := depResStack.Pop()
 			if err != nil {
 				if numIgnoreEmpty != 0 {
 					numIgnoreEmpty--
@@ -129,16 +130,22 @@ func cleanDepSequence(sequence []string, skips skips, numIgnoreEmpty int) []*typ
 		if len(nameMatches) >= 2 {
 			depType := getDepType(sequence[i])
 			set.add(&types.Dependency{
-				Name:              nameMatches[1],
-				DepType:           depType,
-				SystemRequirement: strings.Join(reqStack.Values(), ", "),
+				Name:        nameMatches[1],
+				DepType:     depType,
+				Restriction: strings.Join(depResStack.Values(), ", "),
 			})
 		}
 
-		// Check for requirements.
-		checkRequirements(sequence[i], reqStack)
+		// Check for restrictions.
+		checkDependencyRestrictions(sequence[i], depResStack)
+
+		// Check for formula requirements.
+		checkFormulaRequirements(sequence[i], formulaReqStack)
 	}
-	return set.toSlice()
+	return &types.Dependencies{
+		Lst:                set.toSlice(),
+		SystemRequirements: strings.Join(formulaReqStack.Values(), ", "),
+	}
 }
 
 // getDepType returns the dependency type from the given line.
@@ -163,10 +170,69 @@ func getOSRestriction(line string) string {
 	return ""
 }
 
-// checkRequirements checks the given line for system requirements.
-// If a requirement is found, it is added to the requirements string.
-// System requirements include: on_system, on_linux, on_arm, and on_intel.
-func checkRequirements(line string, reqStack *stack.Stack[string]) {
+// checkFormulaRequirements checks the given line for formula requirements.
+// If a requirement is found, it is added to the stack.
+// Formula system requirements include: macos, maximum_macos, xcode, and arch.
+func checkFormulaRequirements(line string, reqStack *stack.Stack[string]) {
+	regex := regexp.MustCompile(formulaRequirementPattern)
+	matches := regex.FindStringSubmatch(line)
+	count := len(matches)
+	if count < 2 {
+		return
+	}
+
+	req := matches[1]
+
+	// Leading colon indicates an OS requirement without version e.g. ":linux" or ":macos".
+	if s, found := strings.CutPrefix(req, ":"); found {
+		reqStack.Push(s)
+		return
+	}
+
+	req = strings.TrimSuffix(req, ":")
+
+	if count == 3 {
+		switch req {
+		case "macos":
+			req += " >= " + strings.TrimPrefix(matches[2], ":") + " (or linux)"
+		case "maximum_macos":
+			req += " <= " + formatRequirements(matches[2]) + " (or linux)"
+		case "xcode":
+			if strings.Contains(matches[2], `"`) {
+				// Indicates a min version.
+				req += " >= " + formatRequirements(matches[2]) + " (on macos)"
+			} else {
+				req += " " + formatRequirements(matches[2]) + " (on macos)"
+			}
+		case "arch":
+			req = formatRequirements(matches[2])
+		default:
+			log.Printf("Incomplete formula requirement: %s, %s\n", req, matches[2])
+			return
+		}
+	}
+
+	reqStack.Push(req)
+}
+
+// formatRequirements returns a formatted string from the given requirements.
+// Example:
+// "[:monterey, :build]" => "monterey build"
+// ":catalina" => "catalina"
+// "["15.0", :build]" => "15.0 build"
+func formatRequirements(req string) string {
+	if !strings.Contains(req, ",") {
+		return strings.TrimPrefix(req, ":")
+	}
+
+	r := strings.NewReplacer("[", "", "]", "", ":", "", ",", "", `"`, "")
+	return r.Replace(req)
+}
+
+// checkDependencyRestrictions checks the given line for dependecy restrictions.
+// If a restriction is found, it is added to the stack.
+// Dependecy restrictions include: on_system, on_linux, on_arm, and on_intel.
+func checkDependencyRestrictions(line string, resStack *stack.Stack[string]) {
 	// Check for on_system.
 	regex := regexp.MustCompile(onSystemPattern)
 	if regex.MatchString(line) {
@@ -179,35 +245,35 @@ func checkRequirements(line string, reqStack *stack.Stack[string]) {
 		if err != nil {
 			panic(err)
 		}
-		reqStack.Push("linux, macos: " + v)
+		resStack.Push("linux, macos: " + v)
 		return
 	}
 
 	// Check for on_linux.
 	regex = regexp.MustCompile(onLinuxPattern)
 	if regex.MatchString(line) {
-		reqStack.Push("linux")
+		resStack.Push("linux")
 		return
 	}
 
 	// Check for on_macos.
 	regex = regexp.MustCompile(onMacosPattern)
 	if regex.MatchString(line) {
-		reqStack.Push("macos")
+		resStack.Push("macos")
 		return
 	}
 
 	// Check for on_arm.
 	regex = regexp.MustCompile(onArmPattern)
 	if regex.MatchString(line) {
-		reqStack.Push("arm")
+		resStack.Push("arm")
 		return
 	}
 
 	// Check for on_intel.
 	regex = regexp.MustCompile(onIntelPattern)
 	if regex.MatchString(line) {
-		reqStack.Push("intel")
+		resStack.Push("intel")
 		return
 	}
 
@@ -226,7 +292,7 @@ func checkRequirements(line string, reqStack *stack.Stack[string]) {
 		} else {
 			req += v
 		}
-		reqStack.Push(req)
+		resStack.Push(req)
 	}
 }
 

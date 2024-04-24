@@ -178,9 +178,7 @@ func parseFromFile(file *os.File) (*types.SourceFormula, error) {
 		formula.Head = results["head"].(*types.Head)
 	}
 	if results["dependency"] != nil {
-		formula.Dependencies = results["dependency"].([]*types.Dependency)
-	} else {
-		formula.Dependencies = make([]*types.Dependency, 0)
+		formula.Dependencies = results["dependency"].(*types.Dependencies)
 	}
 
 	if err := scanner.Err(); err != nil {

@@ -7,7 +7,7 @@ import (
 )
 
 // cleanDependencySequence returns a cleaned slice of dependencies from a given sequence.
-func cleanDependencySequence(sequence []string) []*types.Dependency {
+func cleanDependencySequence(sequence []string) *types.Dependencies {
 	return cleanDepSequence(sequence, []skipSequence{}, 0)
 }
 

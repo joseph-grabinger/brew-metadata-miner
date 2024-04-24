@@ -8,7 +8,7 @@ type Stable struct {
 	URL string
 
 	// Dependencies of the stable version.
-	Dependencies []*Dependency
+	Dependencies *Dependencies
 }
 
 func (s *Stable) String() string {

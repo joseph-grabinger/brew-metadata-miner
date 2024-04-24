@@ -12,12 +12,12 @@ type Dependency struct {
 	// DepType is the type of the dependency.
 	DepType string
 
-	// System requirement for the dependency.
-	SystemRequirement string
+	// (System) restirction for the dependency.
+	Restriction string
 }
 
 func (d *Dependency) String() string {
-	return fmt.Sprintf("{%s %s %s}", d.Name, d.DepType, d.SystemRequirement)
+	return fmt.Sprintf("{%s %s %s}", d.Name, d.DepType, d.Restriction)
 }
 
 func (d *Dependency) Id() string {

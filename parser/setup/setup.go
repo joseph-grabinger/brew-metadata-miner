@@ -38,6 +38,6 @@ func BuildHeadMatcher(fp delegate.FormulaParser) *delegate.MultiLineMatcher[*typ
 }
 
 // BuildDependencyMatcher returns a MultiLineMatcher for the dependency fields.
-func BuildDependencyMatcher(fp delegate.FormulaParser) *delegate.MultiLineMatcher[[]*types.Dependency] {
-	return delegate.NewMLM[[]*types.Dependency]("dependency", dependencyPattern, fp, isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence)
+func BuildDependencyMatcher(fp delegate.FormulaParser) *delegate.MultiLineMatcher[*types.Dependencies] {
+	return delegate.NewMLM[*types.Dependencies]("dependency", dependencyPattern, fp, isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence)
 }

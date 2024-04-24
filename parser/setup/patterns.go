@@ -149,6 +149,13 @@ const (
 	// followed by the literal string "end".
 	endPatternGeneric = `^(\s{2,})end`
 
+	// formulaRequirementPattern matches a sequence beginning with two or more whitespace characters,
+	// followed by the literal string "depends_on",
+	// followed by one or more word characters (including ':'), which are captured.
+	// Further, an optional sequence of whitespace characters, word characters and
+	// (',', '.', '"', ':', '[', ']') is matched and captured.
+	formulaRequirementPattern = `^\s{2,}depends_on\s+([:\w]+)\s*([\s\w:,."\[\]]+)?`
+
 	// InterpolationPattern matches a sequence beginning with the literal "#{",
 	// followed by one or more characters that are not the closing "}" character,
 	// which is captured, and ending with the "}" character.
