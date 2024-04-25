@@ -30,15 +30,15 @@ func (f *Formula) String() string {
 }
 
 // FormatRepoLine formats the formula as a repository line.
-// `0,"<namespace>/<username>/<repository>","<license>","<stablearchiveurl>"`
+// `0,"<package_manager>","<name>","<license>","<namespace>/<username>/<repository>","<stable_archive_url>","<system_requirement>"`
 func (f *Formula) FormatRepoLine() string {
-	return fmt.Sprintf("0\t\"%s\"\t\"%s\"\t\"%s\"\n", f.RepoURL, f.License, f.ArchiveURL)
+	return fmt.Sprintf("0\t\"brew\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\n", f.Name, f.License, f.RepoURL, f.ArchiveURL, f.SystemRequirement)
 }
 
 // FormatDependencyLine formats the formula as a dependency line.
-// `1,"<license>","<namespace>/<username>/<repository>","<stablearchiveurl>","<type>","<packagemanager>","<name>","<systemrestriction>"`
+// `1,"<packagemanager>","<name>","<license>","<namespace>/<username>/<repository>","<stable_archive_url>","<type>","<system_restriction>"`
 func (f *Formula) FormatDependencyLine(dep *Dependency) string {
-	return fmt.Sprintf("1\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\n", f.License, f.RepoURL, f.ArchiveURL, dep.DepType, "brew", dep.Name, dep.Restriction)
+	return fmt.Sprintf("1\t\"brew\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\n", dep.Name, f.License, f.RepoURL, f.ArchiveURL, dep.DepType, dep.Restriction)
 }
 
 // fromSourceFormula creates a formula from a source formula and evaluates the reopURL.
