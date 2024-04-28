@@ -59,6 +59,11 @@ const (
 	// optional trailing whitespace characters.
 	licenseKeywordPattern = `\s+license\s*`
 
+	// trailingCommaPattern matches a sequence that does not start with a comment character "#",
+	// followed by a comma and zero or more whitespace characters,
+	// optionally followed by a comment that starts with the "#" character.
+	trailingCommaPattern = `^[^#]*,\s*(?:#.*)?$`
+
 	// headURLPattern matches two consecutive spaces,
 	// followed by the literal string "head",
 	// followed by a string enclosed in double quotes, which is captured.

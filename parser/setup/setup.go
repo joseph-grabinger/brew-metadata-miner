@@ -29,7 +29,7 @@ func BuildMirrorMatcher(fp delegate.FormulaParser) *delegate.SingleLineMatcher[s
 
 // BuildLicenseMatcher returns a MultiLineMatcher for the license field.
 func BuildLicenseMatcher(fp delegate.FormulaParser) *delegate.MultiLineMatcher[string] {
-	return delegate.NewMLM[string]("license", licensePattern, fp, isBeginLicenseSequence, hasUnopenedBrackets, cleanLicenseSequence)
+	return delegate.NewMLM[string]("license", licensePattern, fp, isBeginLicenseSequence, isEndLicenseSequence, cleanLicenseSequence)
 }
 
 // BuildHeadMatcher returns a MultiLineMatcher for the head field.

@@ -188,7 +188,7 @@ func parseFromFile(file *os.File) (*types.SourceFormula, error) {
 	// Check if the stable url contains a Ruby string interpolation and resolve it.
 	// This is done here rather then in the cleanURLSequence function because the
 	// variable used for the interpolation can have a global scope in the formula file.
-	// The cleanURLSequence function could only resolve interpolations with a scope of the stable do block.
+	// The cleanURLSequence function could only resolve interpolations with a scope within the stable do block.
 	found, resolved, err := checkForInterpolation(formula.Stable.URL, file)
 	if err != nil {
 		return nil, err

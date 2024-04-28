@@ -27,6 +27,13 @@ func isBeginLicenseSequence(line string) bool {
 	return match && hasUnclosedBrackets(line)
 }
 
+// isEndLicenseSequence returns true if the given line
+// is the end of a license sequence.
+func isEndLicenseSequence(line string) bool {
+	match, _ := regexp.MatchString(trailingCommaPattern, line)
+	return hasUnopenedBrackets(line) && !match
+}
+
 // hasUnclosedBrackets returns true if the given line
 // has more opening than closing brackets.
 func hasUnclosedBrackets(line string) bool {
