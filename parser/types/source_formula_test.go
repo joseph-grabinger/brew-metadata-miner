@@ -56,6 +56,10 @@ var formatLicenseTests = []struct {
 		input:    `all_of: ["Unlicense", "Zlib", "MIT", "BSL-1.0", "BSD-3-Clause", "Apache-2.0", "BSD-2-Clause", "Apache-2.0" => { with: "LLVM-exception" }]`,
 		expected: "Unlicense and Zlib and MIT and BSL-1.0 and BSD-3-Clause and Apache-2.0 and BSD-2-Clause and (Apache-2.0 with LLVM-exception)",
 	},
+	{
+		input:    `any_of: ["MIT", :public_domain, { all_of: ["0BSD", "Zlib", "Artistic-1.0+"], "Apache-2.0" => { with: "LLVM-exception" } },]`,
+		expected: "MIT or Public Domain or (0BSD and Zlib and Artistic-1.0+) or (Apache-2.0 with LLVM-exception)",
+	},
 }
 
 func TestFormatLicense(t *testing.T) {

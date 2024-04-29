@@ -28,6 +28,16 @@ func (s *Stack[T]) Pop() (T, error) {
 	return elem, nil
 }
 
+// Peek returns the top element of the stack without removing it.
+// It returns an error if the stack is empty.
+func (s *Stack[T]) Peek() (T, error) {
+	if len(*s) == 0 {
+		var empty T
+		return empty, errors.New("empty stack")
+	}
+	return (*s)[len(*s)-1], nil
+}
+
 // Values returns the values of the stack.
 func (s *Stack[T]) Values() []T {
 	return *s
