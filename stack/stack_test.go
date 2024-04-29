@@ -65,6 +65,42 @@ func TestPop(t *testing.T) {
 	}
 }
 
+func TestPeek(t *testing.T) {
+	s := New[int]()
+	s.Push(1)
+	s.Push(2)
+	s.Push(3)
+
+	value, err := s.Peek()
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	if value != 3 {
+		t.Errorf("expected value 3, got %d", value)
+	}
+
+	value, err = s.Peek()
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	if value != 3 {
+		t.Errorf("expected value 3, got %d", value)
+	}
+
+	s.Pop()
+	s.Pop()
+	s.Pop()
+
+	_, err = s.Peek()
+	if err == nil {
+		t.Error("expected an error, got nil")
+	} else if err.Error() != "empty stack" {
+		t.Errorf("expected error 'empty stack', got %v", err)
+	}
+}
+
 func TestClear(t *testing.T) {
 	s := New[int]()
 	s.Push(1)
