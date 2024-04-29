@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"main/stack"
 )
 
 // SourceFormula represents a formula as found in the formula file.
@@ -84,11 +86,16 @@ func (sf *SourceFormula) formatLicense() string {
 	)
 	license := r.Replace(sf.License)
 
+	// Remove license exception's curly brackets.
+	re := regexp.MustCompile(`=>{with:([-.\w]+)}`)
+	license = re.ReplaceAllString(license, "=>with:$1")
+
 	// Remove unnecessary curly brackets.
 	r = strings.NewReplacer(
 		",{", ",",
 		"]}", "]",
 		",}", "}",
+		"}", "",
 	)
 	license = r.Replace(license)
 
@@ -96,14 +103,14 @@ func (sf *SourceFormula) formatLicense() string {
 	sequence := make([]string, 0)
 	word := make([]rune, 0)
 	open, close := 0, 0
-	operator := ""
+	operatorStack := stack.New[string]()
 	for _, r := range license {
 		switch r {
 		case ',':
 			if len(word) > 0 {
 				w := string(word)
 				// Check for license exceptions.
-				if operator != "" && strings.Contains(w, "=>{with:") {
+				if strings.Contains(w, "=>with:") {
 					w = "(" + w + ")"
 				}
 				sequence = append(sequence, w)
@@ -113,21 +120,22 @@ func (sf *SourceFormula) formatLicense() string {
 			open++
 
 			if len(sequence) > 0 {
-				joined := []rune(strings.Join(sequence, operator))
+				op, _ := operatorStack.Peek()
+				joined := []rune(strings.Join(sequence, op))
 				result = append(result, joined...)
 
 				// Check if open bracket is needed.
 				if open > 1 {
-					result = append(result, []rune(operator+"(")...)
+					result = append(result, []rune(op+"(")...)
 				}
 
 				sequence = make([]string, 0)
 			}
 
 			if string(word) == "any_of:" || string(word) == "one_of:" {
-				operator = " or "
+				operatorStack.Push(" or ")
 			} else if string(word) == "all_of:" {
-				operator = " and "
+				operatorStack.Push(" and ")
 			}
 
 			word = make([]rune, 0)
@@ -137,19 +145,25 @@ func (sf *SourceFormula) formatLicense() string {
 			if len(word) > 0 {
 				w := string(word)
 				// Check for license exceptions.
-				if operator != "" && strings.Contains(w, "=>{with:") {
+				if _, err := operatorStack.Peek(); err == nil && strings.Contains(w, "=>with:") {
 					w = "(" + w + ")"
 				}
 				sequence = append(sequence, w)
 				word = make([]rune, 0)
 			}
 
-			joined := []rune(strings.Join(sequence, operator))
+			o, _ := operatorStack.Pop()
+			var joined []rune
+			if len(sequence) > 1 {
+				joined = []rune(strings.Join(sequence, o))
+			} else if len(sequence) == 1 {
+				joined = []rune(o + sequence[0])
+			}
 			result = append(result, joined...)
 			sequence = make([]string, 0)
 
 			// Check if close bracket is needed.
-			if close > 1 {
+			if len(operatorStack.Values()) >= 1 {
 				result = append(result, ')')
 			}
 		default:
