@@ -10,7 +10,7 @@ type Dependency struct {
 	Name string
 
 	// DepType is the type of the dependency.
-	DepType string
+	DepType []string
 
 	// (System) restirction for the dependency.
 	Restriction string

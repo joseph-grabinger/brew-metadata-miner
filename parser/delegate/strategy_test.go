@@ -28,7 +28,7 @@ var MlmUrlTests = []struct {
 			URL: "http://www.hampa.ch/pub/pce/pce-0.2.2.tar.gz",
 			Dependencies: &types.Dependencies{
 				Lst: []*types.Dependency{
-					{Name: "sdl12-compat", DepType: ""},
+					{Name: "sdl12-compat", DepType: []string{}},
 				},
 			},
 		},
@@ -124,8 +124,8 @@ var MlmUrlTests = []struct {
 			URL: "https://github.com/HaxeFoundation/neko/archive/refs/tags/v2-3-0/neko-2.3.0.tar.gz",
 			Dependencies: &types.Dependencies{
 				Lst: []*types.Dependency{
-					{Name: "pcre", DepType: ""},
-					{Name: "gtk+", DepType: "", Restriction: "linux"},
+					{Name: "pcre", DepType: []string{}},
+					{Name: "gtk+", DepType: []string{}, Restriction: "linux"},
 				},
 			},
 		},
@@ -236,10 +236,10 @@ var MlmDependencyTests = []struct {
 		def install`, // pinentry.rb
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
-				{Name: "pkg-config", DepType: "build", Restriction: ""},
-				{Name: "libassuan", DepType: "", Restriction: ""},
-				{Name: "libgpg-error", DepType: "", Restriction: ""},
-				{Name: "libsecret", DepType: "", Restriction: "linux"}, // on_linux
+				{Name: "pkg-config", DepType: []string{"build"}, Restriction: ""},
+				{Name: "libassuan", DepType: []string{}, Restriction: ""},
+				{Name: "libgpg-error", DepType: []string{}, Restriction: ""},
+				{Name: "libsecret", DepType: []string{}, Restriction: "linux"}, // on_linux
 			},
 		},
 	},
@@ -260,10 +260,10 @@ var MlmDependencyTests = []struct {
 		patch do`, // libdill.rb
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
-				{Name: "autoconf", DepType: "build", Restriction: ""},
-				{Name: "automake", DepType: "build", Restriction: ""},
-				{Name: "libtool", DepType: "build", Restriction: ""},
-				{Name: "llvm", DepType: "test", Restriction: "arm"}, // on_arm
+				{Name: "autoconf", DepType: []string{"build"}, Restriction: ""},
+				{Name: "automake", DepType: []string{"build"}, Restriction: ""},
+				{Name: "libtool", DepType: []string{"build"}, Restriction: ""},
+				{Name: "llvm", DepType: []string{"test"}, Restriction: "arm"}, // on_arm
 			},
 		},
 	},
@@ -289,14 +289,14 @@ var MlmDependencyTests = []struct {
 		def install`, // grafana.rb
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
-				{Name: "go", DepType: "build", Restriction: ""},
-				{Name: "node", DepType: "build", Restriction: ""},
-				{Name: "yarn", DepType: "build", Restriction: ""},
-				{Name: "python", DepType: "build", Restriction: "linux, macos: < catalina"},           // uses_from_macos
-				{Name: "zlib", DepType: "", Restriction: "linux"},                                     // uses_from_macos
-				{Name: "python-setuptools", DepType: "build", Restriction: "linux, macos: <= mojave"}, // on_system
-				{Name: "fontconfig", DepType: "", Restriction: "linux"},                               // on_linux
-				{Name: "freetype", DepType: "", Restriction: "linux"},                                 // on_linux
+				{Name: "go", DepType: []string{"build"}, Restriction: ""},
+				{Name: "node", DepType: []string{"build"}, Restriction: ""},
+				{Name: "yarn", DepType: []string{"build"}, Restriction: ""},
+				{Name: "python", DepType: []string{"build"}, Restriction: "linux, macos: < catalina"},           // uses_from_macos
+				{Name: "zlib", DepType: []string{}, Restriction: "linux"},                                       // uses_from_macos
+				{Name: "python-setuptools", DepType: []string{"build"}, Restriction: "linux, macos: <= mojave"}, // on_system
+				{Name: "fontconfig", DepType: []string{}, Restriction: "linux"},                                 // on_linux
+				{Name: "freetype", DepType: []string{}, Restriction: "linux"},                                   // on_linux
 			},
 		},
 	},
@@ -319,14 +319,14 @@ var MlmDependencyTests = []struct {
 		def install`, // lastpass-cli.rb
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
-				{Name: "asciidoc", DepType: "build", Restriction: ""},
-				{Name: "cmake", DepType: "build", Restriction: ""},
-				{Name: "docbook-xsl", DepType: "build", Restriction: ""},
-				{Name: "pkg-config", DepType: "build", Restriction: ""},
-				{Name: "openssl@3", DepType: "", Restriction: ""},
-				{Name: "pinentry", DepType: "", Restriction: ""},
-				{Name: "curl", DepType: "", Restriction: "linux, macos: >= mojave"}, // uses_from_macos & on_mojave
-				{Name: "libxslt", DepType: "", Restriction: "linux"},                // uses_from_macos
+				{Name: "asciidoc", DepType: []string{"build"}, Restriction: ""},
+				{Name: "cmake", DepType: []string{"build"}, Restriction: ""},
+				{Name: "docbook-xsl", DepType: []string{"build"}, Restriction: ""},
+				{Name: "pkg-config", DepType: []string{"build"}, Restriction: ""},
+				{Name: "openssl@3", DepType: []string{}, Restriction: ""},
+				{Name: "pinentry", DepType: []string{}, Restriction: ""},
+				{Name: "curl", DepType: []string{}, Restriction: "linux, macos: >= mojave"}, // uses_from_macos & on_mojave
+				{Name: "libxslt", DepType: []string{}, Restriction: "linux"},                // uses_from_macos
 			},
 		},
 	},
@@ -351,8 +351,8 @@ var MlmDependencyTests = []struct {
 	  fails_with :clang do`, // btop.rb
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
-				{Name: "coreutils", DepType: "build", Restriction: "macos"},                      // on_macos
-				{Name: "gcc", DepType: "", Restriction: "(macos, (macos, arm)), macos: ventura"}, // on_macos & on_macos, on_arm & on_ventura
+				{Name: "coreutils", DepType: []string{"build"}, Restriction: "macos"},                    // on_macos
+				{Name: "gcc", DepType: []string{}, Restriction: "(macos, (macos, arm)), macos: ventura"}, // on_macos & on_macos, on_arm & on_ventura
 			},
 			SystemRequirements: "macos >= ventura (or linux)",
 		},
@@ -380,12 +380,12 @@ var MlmDependencyTests = []struct {
 		fails_with gcc: "5"`, // emscripten.rb
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
-				{Name: "cmake", DepType: "build", Restriction: ""},
-				{Name: "node", DepType: "", Restriction: ""},
-				{Name: "python@3.12", DepType: "", Restriction: ""},
-				{Name: "yuicompressor", DepType: "", Restriction: ""},
-				{Name: "zlib", DepType: "", Restriction: "linux"},                  // uses_from_macos
-				{Name: "openjdk", DepType: "", Restriction: "(macos, arm), linux"}, // uses_from_macos
+				{Name: "cmake", DepType: []string{"build"}, Restriction: ""},
+				{Name: "node", DepType: []string{}, Restriction: ""},
+				{Name: "python@3.12", DepType: []string{}, Restriction: ""},
+				{Name: "yuicompressor", DepType: []string{}, Restriction: ""},
+				{Name: "zlib", DepType: []string{}, Restriction: "linux"},                  // uses_from_macos
+				{Name: "openjdk", DepType: []string{}, Restriction: "(macos, arm), linux"}, // uses_from_macos
 			},
 		},
 	},
@@ -409,10 +409,10 @@ var MlmDependencyTests = []struct {
 		patch do`, // grin-wallet.rb
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
-				{Name: "rust", DepType: "build", Restriction: ""},
-				{Name: "llvm@15", DepType: "build", Restriction: "macos, linux"}, // on_macos & on_linux
-				{Name: "pkg-config", DepType: "build", Restriction: "linux"},     // on_linux
-				{Name: "openssl@3", DepType: "", Restriction: "linux"},           // on_linux
+				{Name: "rust", DepType: []string{"build"}, Restriction: ""},
+				{Name: "llvm@15", DepType: []string{"build"}, Restriction: "macos, linux"}, // on_macos & on_linux
+				{Name: "pkg-config", DepType: []string{"build"}, Restriction: "linux"},     // on_linux
+				{Name: "openssl@3", DepType: []string{}, Restriction: "linux"},             // on_linux
 			},
 		},
 	},
@@ -431,9 +431,9 @@ var MlmDependencyTests = []struct {
 	  def install`, // pseudo
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
-				{Name: "gettext", DepType: "build", Restriction: "macos, arm"},
-				{Name: "babl", DepType: "test", Restriction: "macos, arm, macos: mojave"},
-				{Name: "getmail", DepType: "build", Restriction: "macos, intel"},
+				{Name: "gettext", DepType: []string{"build"}, Restriction: "macos, arm"},
+				{Name: "babl", DepType: []string{"test"}, Restriction: "macos, arm, macos: mojave"},
+				{Name: "getmail", DepType: []string{"build"}, Restriction: "macos, intel"},
 			},
 		},
 	},
@@ -447,7 +447,7 @@ var MlmDependencyTests = []struct {
 		def install`, // whisperkit-cli.rb
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
-				{Name: "swift", DepType: "", Restriction: "linux"}, // uses_from_macos
+				{Name: "swift", DepType: []string{}, Restriction: "linux"}, // uses_from_macos
 			},
 			SystemRequirements: `xcode >= 15.0 build (on macos), arm64, macos, macos >= ventura (or linux)`,
 		},
@@ -469,13 +469,13 @@ var MlmDependencyTests = []struct {
 		def install`, // retdec.rb
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
-				{Name: "autoconf", DepType: "build", Restriction: ""},
-				{Name: "automake", DepType: "build", Restriction: ""},
-				{Name: "cmake", DepType: "build", Restriction: ""},
-				{Name: "libtool", DepType: "build", Restriction: ""},
-				{Name: "pkg-config", DepType: "build", Restriction: ""},
-				{Name: "openssl@3", DepType: "", Restriction: ""},
-				{Name: "python@3.12", DepType: "", Restriction: ""},
+				{Name: "autoconf", DepType: []string{"build"}, Restriction: ""},
+				{Name: "automake", DepType: []string{"build"}, Restriction: ""},
+				{Name: "cmake", DepType: []string{"build"}, Restriction: ""},
+				{Name: "libtool", DepType: []string{"build"}, Restriction: ""},
+				{Name: "pkg-config", DepType: []string{"build"}, Restriction: ""},
+				{Name: "openssl@3", DepType: []string{}, Restriction: ""},
+				{Name: "python@3.12", DepType: []string{}, Restriction: ""},
 			},
 			SystemRequirements: `xcode build (on macos), macos >= catalina (or linux)`,
 		},
@@ -646,9 +646,9 @@ var MlmHeadTests = []struct {
 		expected: &types.Head{
 			URL: "https://github.com/bcgsc/abyss.git",
 			Dependencies: []*types.Dependency{
-				{Name: "autoconf", DepType: "build"},
-				{Name: "automake", DepType: "build"},
-				{Name: "multimarkdown", DepType: "build"},
+				{Name: "autoconf", DepType: []string{"build"}},
+				{Name: "automake", DepType: []string{"build"}},
+				{Name: "multimarkdown", DepType: []string{"build"}},
 			},
 		},
 	},

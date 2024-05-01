@@ -82,8 +82,11 @@ const (
 	dependencyPattern = `^\s{2}depends_on\s+"[^"]+"`
 
 	// dependencyTypePattern matches the "=>" litertal,
-	// followed by optional whitespace and then a colon.
-	dependencyTypePattern = `=>\s*:(\w+)`
+	// followed by optional whitespace and an optional opening square bracket,
+	// followed by a colon and a word which is captured.
+	// Optionally, a comma and a colon followed by a word wich is also captured,
+	// followed by a closing square bracket.
+	dependencyTypePattern = `=>\s*\[?:(\w+)(?:,\s*:(\w+)\])?`
 
 	// dependencyKeywordPattern matchesthe string "depends_on"
 	// followed by one or more whitespace characters,

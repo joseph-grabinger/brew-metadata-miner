@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"slices"
 	"strings"
 
 	"main/parser/types"
@@ -157,14 +158,16 @@ func cleanDepSequence(sequence []string, skips skips, numIgnoreEmpty int) *types
 }
 
 // getDepType returns the dependency type from the given line.
-// If no type is found, an empty string is returned.
-func getDepType(line string) string {
+// If no type is found, an empty slice is returned.
+func getDepType(line string) []string {
 	regex := regexp.MustCompile(dependencyTypePattern)
 	typeMatches := regex.FindStringSubmatch(line)
 	if len(typeMatches) >= 2 {
-		return typeMatches[1]
+		return slices.DeleteFunc(typeMatches[1:], func(s string) bool {
+			return s == ""
+		})
 	}
-	return ""
+	return []string{}
 }
 
 // getOSRestriction returns the OS restriction from the given line.

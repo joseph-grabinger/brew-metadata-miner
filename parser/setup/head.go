@@ -2,6 +2,7 @@ package setup
 
 import (
 	"regexp"
+	"slices"
 
 	"main/parser/types"
 )
@@ -35,7 +36,9 @@ func cleanHeadSequence(sequence []string) *types.Head {
 		regex = regexp.MustCompile(dependencyTypePattern)
 		typeMatches := regex.FindStringSubmatch(sequence[i])
 		if len(typeMatches) >= 2 {
-			dep.DepType = typeMatches[1]
+			dep.DepType = slices.DeleteFunc(typeMatches[1:], func(s string) bool {
+				return s == ""
+			})
 		}
 		head.Dependencies = append(head.Dependencies, dep)
 	}

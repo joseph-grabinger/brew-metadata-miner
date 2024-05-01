@@ -31,10 +31,10 @@ var ParseFromFileTests = []struct {
 			Head:    nil,
 			Dependencies: &types.Dependencies{
 				Lst: []*types.Dependency{
-					{Name: "gmp", DepType: ""},
-					{Name: "i686-elf-binutils", DepType: ""},
-					{Name: "libmpc", DepType: ""},
-					{Name: "mpfr", DepType: ""},
+					{Name: "gmp", DepType: []string{}},
+					{Name: "i686-elf-binutils", DepType: []string{}},
+					{Name: "libmpc", DepType: []string{}},
+					{Name: "mpfr", DepType: []string{}},
 				},
 			},
 		},
@@ -52,21 +52,21 @@ var ParseFromFileTests = []struct {
 			Head:    nil,
 			Dependencies: &types.Dependencies{
 				Lst: []*types.Dependency{
-					{Name: "gettext", DepType: ""},
-					{Name: "gmp", DepType: ""},
-					{Name: "jpeg-turbo", DepType: ""},
-					{Name: "libtiff", DepType: ""},
-					{Name: "nettle", DepType: ""},
-					{Name: "pcre", DepType: ""},
-					{Name: "webp", DepType: ""},
-					{Name: "bzip2", DepType: "", Restriction: "linux"},     // on_linux
-					{Name: "krb5", DepType: "", Restriction: "linux"},      // on_linux
-					{Name: "libxcrypt", DepType: "", Restriction: "linux"}, // on_linux
+					{Name: "gettext", DepType: []string{}},
+					{Name: "gmp", DepType: []string{}},
+					{Name: "jpeg-turbo", DepType: []string{}},
+					{Name: "libtiff", DepType: []string{}},
+					{Name: "nettle", DepType: []string{}},
+					{Name: "pcre", DepType: []string{}},
+					{Name: "webp", DepType: []string{}},
+					{Name: "bzip2", DepType: []string{}, Restriction: "linux"},     // on_linux
+					{Name: "krb5", DepType: []string{}, Restriction: "linux"},      // on_linux
+					{Name: "libxcrypt", DepType: []string{}, Restriction: "linux"}, // on_linux
 					// {Name: "libxslt", DepType: ""},      // on_linux
-					{Name: "sqlite", DepType: "", Restriction: "linux"},       // on_linux
-					{Name: "zlib", DepType: "", Restriction: "linux"},         // on_linux
-					{Name: "gnu-sed", DepType: "build", Restriction: "macos"}, // on_macos
-					{Name: "libnsl", DepType: "", Restriction: "linux"},       // on_linux
+					{Name: "sqlite", DepType: []string{}, Restriction: "linux"},         // on_linux
+					{Name: "zlib", DepType: []string{}, Restriction: "linux"},           // on_linux
+					{Name: "gnu-sed", DepType: []string{"build"}, Restriction: "macos"}, // on_macos
+					{Name: "libnsl", DepType: []string{}, Restriction: "linux"},         // on_linux
 				},
 			},
 		},
@@ -84,11 +84,11 @@ var ParseFromFileTests = []struct {
 			Head:    nil,
 			Dependencies: &types.Dependencies{
 				Lst: []*types.Dependency{
-					{Name: "boost", DepType: "build"},
-					{Name: "libtool", DepType: "build"},
-					{Name: "libgcrypt", DepType: ""},
-					{Name: "ghostscript", DepType: "build", Restriction: "macos: >= sonoma, linux"}, // on_sonoma :or_newer && on_linux
-					{Name: "groff", DepType: "build", Restriction: "macos: >= ventura, linux"},      // on_ventura :or_newer && on_linux
+					{Name: "boost", DepType: []string{"build"}},
+					{Name: "libtool", DepType: []string{"build"}},
+					{Name: "libgcrypt", DepType: []string{}},
+					{Name: "ghostscript", DepType: []string{"build"}, Restriction: "macos: >= sonoma, linux"}, // on_sonoma :or_newer && on_linux
+					{Name: "groff", DepType: []string{"build"}, Restriction: "macos: >= ventura, linux"},      // on_ventura :or_newer && on_linux
 				},
 			},
 		},
@@ -111,9 +111,9 @@ var ParseFromFileTests = []struct {
 			},
 			Dependencies: &types.Dependencies{
 				Lst: []*types.Dependency{
-					{Name: "rust", DepType: "build"},
-					{Name: "netcat", DepType: "test", Restriction: "linux"},
-					{Name: "unzip", DepType: "", Restriction: "linux"},
+					{Name: "rust", DepType: []string{"build"}},
+					{Name: "netcat", DepType: []string{"test"}, Restriction: "linux"},
+					{Name: "unzip", DepType: []string{}, Restriction: "linux"},
 				},
 			},
 		},
