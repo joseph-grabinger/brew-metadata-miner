@@ -141,6 +141,14 @@ func cleanDepSequence(sequence []string, skips skips, numIgnoreEmpty int) *types
 
 		// Check for formula requirements.
 		checkFormulaRequirements(sequence[i], formulaReqStack)
+
+		// Check for fails_with.
+		regex = regexp.MustCompile(failsWithPattern)
+		if regex.MatchString(sequence[i]) {
+			// Add a new empty restriction which will be poped as soon as
+			// the end statement of the fails_with block is reached.
+			depResStack.Push("")
+		}
 	}
 	return &types.Dependencies{
 		Lst:                set.toSlice(),

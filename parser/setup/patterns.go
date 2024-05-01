@@ -161,6 +161,12 @@ const (
 	// (',', '.', '"', ':', '[', ']') is matched and captured.
 	formulaRequirementPattern = `^\s{2,}depends_on\s+([:\w]+)\s*([\s\w:,."\[\]]+)?`
 
+	// failsWithPattern matches a sequence beginning with two or more whitespace characters,
+	// followed by the literal string "fails_with",
+	// followed by an optional sequence of words, spaces, ', =, >, and : characters,
+	// and then the literal string "do".
+	failsWithPattern = `^\s{2,}fails_with[=>':\w\s]*\s+do`
+
 	// InterpolationPattern matches a sequence beginning with the literal "#{",
 	// followed by one or more characters that are not the closing "}" character,
 	// which is captured, and ending with the "}" character.
