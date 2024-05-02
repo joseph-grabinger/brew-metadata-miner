@@ -18,24 +18,25 @@ type dependecySet map[string]*types.Dependency
 // If the dependency already exists, the system requirements are merged.
 func (s dependecySet) add(dep *types.Dependency) {
 	id := dep.Id()
-	if d, ok := s[id]; ok {
-		// Merge the dependency`s system restrictions.
-		log.Println("Merging system restirctions for: ", dep.Name)
-		if dep.Restriction == "" || d.Restriction == "" {
-			return
-		}
-
-		if strings.Contains(dep.Restriction, ", ") {
-			dep.Restriction = fmt.Sprintf("(%s)", dep.Restriction)
-		}
-		if strings.Contains(d.Restriction, ", ") {
-			d.Restriction = fmt.Sprintf("(%s)", d.Restriction)
-		}
-
-		d.Restriction = strings.Join([]string{d.Restriction, dep.Restriction}, ", ")
+	d, ok := s[id]
+	if !ok {
+		s[id] = dep
 		return
 	}
-	s[id] = dep
+
+	// Merge the dependency`s system restrictions.
+	if dep.Restriction == "" || d.Restriction == "" {
+		return
+	}
+
+	if strings.Contains(dep.Restriction, " and ") && !strings.Contains(dep.Restriction, "(") {
+		dep.Restriction = fmt.Sprintf("(%s)", dep.Restriction)
+	}
+	if strings.Contains(d.Restriction, " and ") && !strings.Contains(d.Restriction, "(") {
+		d.Restriction = fmt.Sprintf("(%s)", d.Restriction)
+	}
+
+	d.Restriction = strings.Join([]string{d.Restriction, dep.Restriction}, " or ")
 }
 
 // toSlice returns the set as a slice of dependencies.
@@ -91,16 +92,15 @@ func cleanDepSequence(sequence []string, skips skips, numIgnoreEmpty int) *types
 			continue
 		}
 
-		// Check for system dependency.
+		// Check for uses_from_macos.
 		regex := regexp.MustCompile(macOSSystemDependencyPattern)
 		nameMatches := regex.FindStringSubmatch(sequence[i])
 		if len(nameMatches) >= 2 {
-			// TODO check if doable in one step
 			depType := getDepType(sequence[i])
 
 			res := "linux"
 			if since := getOSRestriction(sequence[i]); since != "" {
-				res += ", macos: < " + since
+				res += " or macos: < " + since
 			}
 			set.add(&types.Dependency{
 				Name:        nameMatches[1],
@@ -130,11 +130,20 @@ func cleanDepSequence(sequence []string, skips skips, numIgnoreEmpty int) *types
 		nameMatches = regex.FindStringSubmatch(sequence[i])
 		if len(nameMatches) >= 2 {
 			depType := getDepType(sequence[i])
+
+			restrictions := depResStack.Values()
+
+			clangRestriction := getClangRestriction(sequence[i])
+			if clangRestriction != "" {
+				restrictions = append(restrictions, ("clang version " + clangRestriction))
+			}
+
 			set.add(&types.Dependency{
 				Name:        nameMatches[1],
 				DepType:     depType,
-				Restriction: strings.Join(depResStack.Values(), ", "),
+				Restriction: strings.Join(restrictions, " and "),
 			})
+			continue
 		}
 
 		// Check for restrictions.
@@ -168,6 +177,17 @@ func getDepType(line string) []string {
 		})
 	}
 	return []string{}
+}
+
+// getClangRestriction returns the clang restriction for a dependecy from the given line.
+// If no restriction is found, an empty string is returned.
+func getClangRestriction(line string) string {
+	regex := regexp.MustCompile(clangVersionPattern)
+	matches := regex.FindStringSubmatch(line)
+	if len(matches) >= 2 {
+		return matches[1]
+	}
+	return ""
 }
 
 // getOSRestriction returns the OS restriction from the given line.
@@ -256,7 +276,7 @@ func checkDependencyRestrictions(line string, resStack *stack.Stack[string]) {
 		if err != nil {
 			panic(err)
 		}
-		resStack.Push("linux, macos: " + v)
+		resStack.Push("linux or macos: " + v)
 		return
 	}
 
@@ -304,6 +324,13 @@ func checkDependencyRestrictions(line string, resStack *stack.Stack[string]) {
 			req += v
 		}
 		resStack.Push(req)
+		return
+	}
+
+	// Check for DevelopmentTools.clang_build_version.
+	clangRestriction := getClangRestriction(line)
+	if clangRestriction != "" {
+		resStack.Push("clang version " + clangRestriction)
 	}
 }
 

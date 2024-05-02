@@ -225,78 +225,35 @@ var MlmDependencyTests = []struct {
 	expected *types.Dependencies
 }{
 	{
-		input: `  depends_on "pkg-config" => :build
-		depends_on "libassuan"
-		depends_on "libgpg-error"
-	  
-		on_linux do
-		  depends_on "libsecret"
-		end
-		
-		def install`, // pinentry.rb
-		expected: &types.Dependencies{
-			Lst: []*types.Dependency{
-				{Name: "pkg-config", DepType: []string{"build"}, Restriction: ""},
-				{Name: "libassuan", DepType: []string{}, Restriction: ""},
-				{Name: "libgpg-error", DepType: []string{}, Restriction: ""},
-				{Name: "libsecret", DepType: []string{}, Restriction: "linux"}, // on_linux
-			},
-		},
-	},
-	{
-		input: `  depends_on "autoconf" => :build
-		depends_on "automake" => :build
-		depends_on "libtool" => :build
-	  
-		on_arm do
-		  # Using Apple clang to compile test results in executable that
-		  # causes a segmentation fault, but LLVM clang or GCC seem to work.
-		  # Issue ref: https://github.com/sustrik/libdill/issues/208
-		  depends_on "llvm" => :test
-		end
-	  
-		# Apply upstream commit to fix build with newer GCC.
-		# Remove with next release.
-		patch do`, // libdill.rb
-		expected: &types.Dependencies{
-			Lst: []*types.Dependency{
-				{Name: "autoconf", DepType: []string{"build"}, Restriction: ""},
-				{Name: "automake", DepType: []string{"build"}, Restriction: ""},
-				{Name: "libtool", DepType: []string{"build"}, Restriction: ""},
-				{Name: "llvm", DepType: []string{"test"}, Restriction: "arm"}, // on_arm
-			},
-		},
-	},
-	{
 		input: `  depends_on "go" => :build
 		depends_on "node" => :build
 		depends_on "yarn" => :build
-	  
+
 		uses_from_macos "python" => :build, since: :catalina
 		uses_from_macos "zlib"
-	  
+
 		on_system :linux, macos: :mojave_or_older do
 		  # Workaround for old node-gyp that needs distutils.
 		  # TODO: Remove when node-gyp is v10+
 		  depends_on "python-setuptools" => :build
 		end
-	  
+
 		on_linux do
 		  depends_on "fontconfig"
 		  depends_on "freetype"
 		end
-	  
+
 		def install`, // grafana.rb
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
 				{Name: "go", DepType: []string{"build"}, Restriction: ""},
 				{Name: "node", DepType: []string{"build"}, Restriction: ""},
 				{Name: "yarn", DepType: []string{"build"}, Restriction: ""},
-				{Name: "python", DepType: []string{"build"}, Restriction: "linux, macos: < catalina"},           // uses_from_macos
-				{Name: "zlib", DepType: []string{}, Restriction: "linux"},                                       // uses_from_macos
-				{Name: "python-setuptools", DepType: []string{"build"}, Restriction: "linux, macos: <= mojave"}, // on_system
-				{Name: "fontconfig", DepType: []string{}, Restriction: "linux"},                                 // on_linux
-				{Name: "freetype", DepType: []string{}, Restriction: "linux"},                                   // on_linux
+				{Name: "python", DepType: []string{"build"}, Restriction: "linux or macos: < catalina"},           // uses_from_macos
+				{Name: "zlib", DepType: []string{}, Restriction: "linux"},                                         // uses_from_macos
+				{Name: "python-setuptools", DepType: []string{"build"}, Restriction: "linux or macos: <= mojave"}, // on_system
+				{Name: "fontconfig", DepType: []string{}, Restriction: "linux"},                                   // on_linux
+				{Name: "freetype", DepType: []string{}, Restriction: "linux"},                                     // on_linux
 			},
 		},
 	},
@@ -307,15 +264,15 @@ var MlmDependencyTests = []struct {
 		depends_on "pkg-config" => :build
 		depends_on "openssl@3"
 		depends_on "pinentry"
-	  
+
 		uses_from_macos "curl"
 		uses_from_macos "libxslt"
-	  
+
 		# Avoid crashes on Mojave's version of libcurl (https://github.com/lastpass/lastpass-cli/issues/427)
 		on_mojave :or_newer do
 		  depends_on "curl"
 		end
-	  
+
 		def install`, // lastpass-cli.rb
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
@@ -325,8 +282,8 @@ var MlmDependencyTests = []struct {
 				{Name: "pkg-config", DepType: []string{"build"}, Restriction: ""},
 				{Name: "openssl@3", DepType: []string{}, Restriction: ""},
 				{Name: "pinentry", DepType: []string{}, Restriction: ""},
-				{Name: "curl", DepType: []string{}, Restriction: "linux, macos: >= mojave"}, // uses_from_macos & on_mojave
-				{Name: "libxslt", DepType: []string{}, Restriction: "linux"},                // uses_from_macos
+				{Name: "curl", DepType: []string{}, Restriction: "linux or macos: >= mojave"}, // uses_from_macos & on_mojave
+				{Name: "libxslt", DepType: []string{}, Restriction: "linux"},                  // uses_from_macos
 			},
 		},
 	},
@@ -334,25 +291,25 @@ var MlmDependencyTests = []struct {
 		input: `  on_macos do
 		depends_on "coreutils" => :build
 		depends_on "gcc" if DevelopmentTools.clang_build_version <= 1403
-	
+
 		on_arm do
 		  depends_on "gcc"
 		  depends_on macos: :ventura
 		  fails_with :clang
 		end
 	  end
-	
+
 	  on_ventura do
 		depends_on "gcc"
 		fails_with :clang
 	  end
-	
+
 	  # -ftree-loop-vectorize -flto=12 -s
 	  fails_with :clang do`, // btop.rb
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
-				{Name: "coreutils", DepType: []string{"build"}, Restriction: "macos"},                    // on_macos
-				{Name: "gcc", DepType: []string{}, Restriction: "(macos, (macos, arm)), macos: ventura"}, // on_macos & on_macos, on_arm & on_ventura
+				{Name: "coreutils", DepType: []string{"build"}, Restriction: "macos"},                                                     // on_macos
+				{Name: "gcc", DepType: []string{}, Restriction: "(macos and clang version <= 1403) or (macos and arm) or macos: ventura"}, // on_macos & on_macos, on_arm & on_ventura
 			},
 			SystemRequirements: "macos >= ventura (or linux)",
 		},
@@ -362,9 +319,9 @@ var MlmDependencyTests = []struct {
 		depends_on "node"
 		depends_on "python@3.12"
 		depends_on "yuicompressor"
-	  
+
 		uses_from_macos "zlib"
-	  
+
 		# OpenJDK is needed as a dependency on Linux and ARM64 for google-closure-compiler,
 		# an emscripten dependency, because the native GraalVM image will not work.
 		on_macos do
@@ -372,11 +329,11 @@ var MlmDependencyTests = []struct {
 			depends_on "openjdk"
 		  end
 		end
-	  
+
 		on_linux do
 		  depends_on "openjdk"
 		end
-	  
+
 		fails_with gcc: "5"`, // emscripten.rb
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
@@ -384,8 +341,8 @@ var MlmDependencyTests = []struct {
 				{Name: "node", DepType: []string{}, Restriction: ""},
 				{Name: "python@3.12", DepType: []string{}, Restriction: ""},
 				{Name: "yuicompressor", DepType: []string{}, Restriction: ""},
-				{Name: "zlib", DepType: []string{}, Restriction: "linux"},                  // uses_from_macos
-				{Name: "openjdk", DepType: []string{}, Restriction: "(macos, arm), linux"}, // uses_from_macos
+				{Name: "zlib", DepType: []string{}, Restriction: "linux"},                       // uses_from_macos
+				{Name: "openjdk", DepType: []string{}, Restriction: "(macos and arm) or linux"}, // uses_from_macos
 			},
 		},
 	},
@@ -410,9 +367,9 @@ var MlmDependencyTests = []struct {
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
 				{Name: "rust", DepType: []string{"build"}, Restriction: ""},
-				{Name: "llvm@15", DepType: []string{"build"}, Restriction: "macos, linux"}, // on_macos & on_linux
-				{Name: "pkg-config", DepType: []string{"build"}, Restriction: "linux"},     // on_linux
-				{Name: "openssl@3", DepType: []string{}, Restriction: "linux"},             // on_linux
+				{Name: "llvm@15", DepType: []string{"build"}, Restriction: "(macos and clang version >= 1500) or linux"}, // on_macos & on_linux
+				{Name: "pkg-config", DepType: []string{"build"}, Restriction: "linux"},                                   // on_linux
+				{Name: "openssl@3", DepType: []string{}, Restriction: "linux"},                                           // on_linux
 			},
 		},
 	},
@@ -431,9 +388,9 @@ var MlmDependencyTests = []struct {
 	  def install`, // pseudo
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
-				{Name: "gettext", DepType: []string{"build"}, Restriction: "macos, arm"},
-				{Name: "babl", DepType: []string{"test"}, Restriction: "macos, arm, macos: mojave"},
-				{Name: "getmail", DepType: []string{"build"}, Restriction: "macos, intel"},
+				{Name: "gettext", DepType: []string{"build"}, Restriction: "macos and arm"},
+				{Name: "babl", DepType: []string{"test"}, Restriction: "macos and arm and macos: mojave"},
+				{Name: "getmail", DepType: []string{"build"}, Restriction: "macos and intel"},
 			},
 		},
 	},
@@ -460,12 +417,12 @@ var MlmDependencyTests = []struct {
 		depends_on "pkg-config" => :build
 		depends_on "openssl@3"
 		depends_on "python@3.12"
-	  
+
 		on_macos do
 		  depends_on xcode: :build
 		  depends_on macos: :catalina
 		end
-	  
+
 		def install`, // retdec.rb
 		expected: &types.Dependencies{
 			Lst: []*types.Dependency{
@@ -478,6 +435,45 @@ var MlmDependencyTests = []struct {
 				{Name: "python@3.12", DepType: []string{}, Restriction: ""},
 			},
 			SystemRequirements: `xcode build (on macos), macos >= catalina (or linux)`,
+		},
+	},
+	{
+		input: `  depends_on "cmake" => [:build, :test]
+		uses_from_macos "expat"
+		uses_from_macos "libxml2"
+		uses_from_macos "tcl-tk"
+		uses_from_macos "zlib"
+
+		on_macos do
+		  on_arm do
+			if DevelopmentTools.clang_build_version == 1316
+			  depends_on "llvm" => :build
+
+			  # clang: error: unable to execute command: Segmentation fault: 11
+			  # clang: error: clang frontend command failed due to signal (use -v to see invocation)
+			  # Apple clang version 13.1.6 (clang-1316.0.21.2)
+			  fails_with :clang
+			end
+		  end
+		end
+
+		on_linux do
+		  depends_on "libaec"
+		  depends_on "mesa-glu"
+		end
+
+		fails_with gcc: "5"`, // vkt.rb
+		expected: &types.Dependencies{
+			Lst: []*types.Dependency{
+				{Name: "cmake", DepType: []string{"build", "test"}, Restriction: ""},
+				{Name: "expat", DepType: []string{}, Restriction: "linux"},                                         // uses_from_macos
+				{Name: "libxml2", DepType: []string{}, Restriction: "linux"},                                       // uses_from_macos
+				{Name: "tcl-tk", DepType: []string{}, Restriction: "linux"},                                        // uses_from_macos
+				{Name: "zlib", DepType: []string{}, Restriction: "linux"},                                          // uses_from_macos
+				{Name: "llvm", DepType: []string{"build"}, Restriction: "macos and arm and clang version == 1316"}, // on_macos
+				{Name: "libaec", DepType: []string{}, Restriction: "linux"},                                        // on_linux
+				{Name: "mesa-glu", DepType: []string{}, Restriction: "linux"},                                      // on_linux
+			},
 		},
 	},
 }

@@ -87,8 +87,8 @@ var ParseFromFileTests = []struct {
 					{Name: "boost", DepType: []string{"build"}},
 					{Name: "libtool", DepType: []string{"build"}},
 					{Name: "libgcrypt", DepType: []string{}},
-					{Name: "ghostscript", DepType: []string{"build"}, Restriction: "macos: >= sonoma, linux"}, // on_sonoma :or_newer && on_linux
-					{Name: "groff", DepType: []string{"build"}, Restriction: "macos: >= ventura, linux"},      // on_ventura :or_newer && on_linux
+					{Name: "ghostscript", DepType: []string{"build"}, Restriction: "macos: >= sonoma or linux"}, // on_sonoma :or_newer && on_linux
+					{Name: "groff", DepType: []string{"build"}, Restriction: "macos: >= ventura or linux"},      // on_ventura :or_newer && on_linux
 				},
 			},
 		},

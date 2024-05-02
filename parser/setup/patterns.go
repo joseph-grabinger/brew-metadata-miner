@@ -116,7 +116,7 @@ const (
 	// or a line that starts with two or more white spaces, followed by either of the listed keywords:
 	// ("depends_on", "uses_from_macos", "on_arm", etc.).
 	// Further, any line strting with four or more whitespace characters followed by "fails_with" is also matched.
-	endDependencyPatternNegated = `^(\s{2,})(depends_on|uses_from_macos|on_macos|on_arm|on_intel|on_linux|on_system|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan|end)|^[\s\t]*$|^\s*#.*$|^(\s{4,}fails_with)`
+	endDependencyPatternNegated = `^(\s{2,})(depends_on|uses_from_macos|on_macos|on_arm|on_intel|on_linux|on_system|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan|end|if DevelopmentTools\.)|^[\s\t]*$|^\s*#.*$|^(\s{4,}fails_with)`
 
 	// commentPattern matches matches a sequence that starts with the "#" character,
 	// followed by any sequence of characters until the end of the line.
@@ -163,6 +163,12 @@ const (
 	// Further, an optional sequence of whitespace characters, word characters and
 	// (',', '.', '"', ':', '[', ']') is matched and captured.
 	formulaRequirementPattern = `^\s{2,}depends_on\s+([:\w]+)\s*([\s\w:,."\[\]]+)?`
+
+	// clangVersionPattern matches a sequence beginning with the literal string "if",
+	// followed by one or more whitespace characters, a word, the word character "clang_build_version",
+	// one or more whitespace characters, and then a comparison operator and a number, which are captured.
+	// Further, it is ensured that the line does not start with a comment character "#".
+	clangVersionPattern = `^[^#]*if\s+\w+\.clang_build_version\s+([<>]?=?=?\s+\d+)`
 
 	// failsWithPattern matches a sequence beginning with two or more whitespace characters,
 	// followed by the literal string "fails_with",
