@@ -115,8 +115,9 @@ const (
 	// or a comment line (starts with zero or more spaces followed by '#'),
 	// or a line that starts with two or more white spaces, followed by either of the listed keywords:
 	// ("depends_on", "uses_from_macos", "on_arm", etc.).
-	// Further, any line strting with four or more whitespace characters followed by "fails_with" is also matched.
-	endDependencyPatternNegated = `^(\s{2,})(depends_on|uses_from_macos|on_macos|on_arm|on_intel|on_linux|on_system|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan|end|if DevelopmentTools\.)|^[\s\t]*$|^\s*#.*$|^(\s{4,}fails_with)`
+	// Further, any line strting with four or more whitespace characters followed by "fails_with" or "resource" is also matched.
+	// Further, any line starting with six or more whitespace characters followed by "url" or "sha256" is also matched.
+	endDependencyPatternNegated = `^(\s{2,})(depends_on|uses_from_macos|on_macos|on_arm|on_intel|on_linux|on_system|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan|end|if DevelopmentTools\.)|^[\s\t]*$|^\s*#.*$|^(\s{4,}(fails_with|resource))|^(\s{6,}(url|sha256))`
 
 	// commentPattern matches matches a sequence that starts with the "#" character,
 	// followed by any sequence of characters until the end of the line.
@@ -175,6 +176,12 @@ const (
 	// followed by an optional sequence of words, spaces, ', =, >, and : characters,
 	// and then the literal string "do".
 	failsWithPattern = `^\s{2,}fails_with[=>':\w\s]*\s+do`
+
+	// resourcePattern matches a sequence beginning with two or more whitespace characters,
+	// followed by the literal string "resource",
+	// followed by a string enclosed in double quotes, one or more whitespcaes
+	// and the literal string "do".
+	resourcePattern = `^\s{2,}resource\s+"[^"]+"\s+do`
 
 	// InterpolationPattern matches a sequence beginning with the literal "#{",
 	// followed by one or more characters that are not the closing "}" character,

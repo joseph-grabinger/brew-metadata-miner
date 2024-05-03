@@ -156,11 +156,12 @@ func cleanDepSequence(sequence []string, skips skips, numIgnoreEmpty int) *types
 			continue
 		}
 
-		// Check for fails_with.
-		regex = regexp.MustCompile(failsWithPattern)
-		if regex.MatchString(sequence[i]) {
+		// Check for fails_with & resource blocks.
+		failsExp := regexp.MustCompile(failsWithPattern)
+		resourceExp := regexp.MustCompile(resourcePattern)
+		if failsExp.MatchString(sequence[i]) || resourceExp.MatchString(sequence[i]) {
 			// Add a new empty restriction which will be poped as soon as
-			// the end statement of the fails_with block is reached.
+			// the end statement of the respective block is reached.
 			depResStack.Push("")
 		}
 	}
