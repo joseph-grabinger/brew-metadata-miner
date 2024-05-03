@@ -117,7 +117,7 @@ const (
 	// ("depends_on", "uses_from_macos", "on_arm", etc.).
 	// Further, any line strting with four or more whitespace characters followed by "fails_with" or "resource" is also matched.
 	// Further, any line starting with six or more whitespace characters followed by "url" or "sha256" is also matched.
-	endDependencyPatternNegated = `^(\s{2,})(depends_on|uses_from_macos|on_macos|on_arm|on_intel|on_linux|on_system|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan|end|if DevelopmentTools\.)|^[\s\t]*$|^\s*#.*$|^(\s{4,}(fails_with|resource))|^(\s{6,}(url|sha256))`
+	endDependencyPatternNegated = `^(\s{2,})(depends_on|uses_from_macos|on_macos|on_arm|on_intel|on_linux|on_system|on_el_capitan|on_sierra|on_high_sierra|on_mojave|on_catalina|on_big_sur|on_monterey|on_ventura|on_sonoma|on_el_capitan|end|if DevelopmentTools\.)|^[\s\t]*$|^\s*#.*$|^(\s{4,}(fails_with|resource))|^(\s{6,}(url|sha256))`
 
 	// commentPattern matches matches a sequence that starts with the "#" character,
 	// followed by any sequence of characters until the end of the line.
@@ -144,7 +144,7 @@ const (
 	// followed by the literal string "on_" and a macOS version, which is captured.
 	// Optionally, the version may be followed by a colon and a word character
 	// indicating a restriction, which is also captured.
-	onMacOSVersionPattern = `^(\s{2,})on_(mojave|catalina|big_sur|monterey|ventura|sonoma|el_capitan)\s+(:\w+)?`
+	onMacOSVersionPattern = `^(\s{2,})on_(el_capitan|sierra|high_sierra|mojave|catalina|big_sur|monterey|ventura|sonoma|el_capitan)\s+(:\w+)?`
 
 	// onArmPattern matches a line beginning with two or more whitespace characters,
 	// followed by the literal string "on_arm".
