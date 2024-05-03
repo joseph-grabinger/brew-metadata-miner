@@ -146,11 +146,15 @@ func cleanDepSequence(sequence []string, skips skips, numIgnoreEmpty int) *types
 			continue
 		}
 
-		// Check for restrictions.
-		checkDependencyRestrictions(sequence[i], depResStack)
-
 		// Check for formula requirements.
-		checkFormulaRequirements(sequence[i], formulaReqStack)
+		if found := checkFormulaRequirements(sequence[i], formulaReqStack); found {
+			continue
+		}
+
+		// Check for restrictions.
+		if found := checkDependencyRestrictions(sequence[i], depResStack); found {
+			continue
+		}
 
 		// Check for fails_with.
 		regex = regexp.MustCompile(failsWithPattern)
@@ -202,14 +206,14 @@ func getOSRestriction(line string) string {
 }
 
 // checkFormulaRequirements checks the given line for formula requirements.
-// If a requirement is found, it is added to the stack.
+// If a requirement is found, it is added to the stack and true is returned.
 // Formula system requirements include: macos, maximum_macos, xcode, and arch.
-func checkFormulaRequirements(line string, reqStack *stack.Stack[string]) {
+func checkFormulaRequirements(line string, reqStack *stack.Stack[string]) bool {
 	regex := regexp.MustCompile(formulaRequirementPattern)
 	matches := regex.FindStringSubmatch(line)
 	count := len(matches)
 	if count < 2 {
-		return
+		return false
 	}
 
 	req := matches[1]
@@ -217,7 +221,7 @@ func checkFormulaRequirements(line string, reqStack *stack.Stack[string]) {
 	// Leading colon indicates an OS requirement without version e.g. ":linux" or ":macos".
 	if s, found := strings.CutPrefix(req, ":"); found {
 		reqStack.Push(s)
-		return
+		return true
 	}
 
 	req = strings.TrimSuffix(req, ":")
@@ -239,11 +243,14 @@ func checkFormulaRequirements(line string, reqStack *stack.Stack[string]) {
 			req = formatRequirements(matches[2])
 		default:
 			log.Printf("Incomplete formula requirement: %s, %s\n", req, matches[2])
-			return
+			return false
 		}
 	}
 
+	req = strings.ReplaceAll(req, "DevelopmentTools.clang_build_version", "clang version")
+
 	reqStack.Push(req)
+	return true
 }
 
 // formatRequirements returns a formatted string from the given requirements.
@@ -261,9 +268,9 @@ func formatRequirements(req string) string {
 }
 
 // checkDependencyRestrictions checks the given line for dependecy restrictions.
-// If a restriction is found, it is added to the stack.
+// If a restriction is found, it is added to the stack and true is returned.
 // Dependecy restrictions include: on_system, on_linux, on_arm, and on_intel.
-func checkDependencyRestrictions(line string, resStack *stack.Stack[string]) {
+func checkDependencyRestrictions(line string, resStack *stack.Stack[string]) bool {
 	// Check for on_system.
 	regex := regexp.MustCompile(onSystemPattern)
 	if regex.MatchString(line) {
@@ -277,35 +284,35 @@ func checkDependencyRestrictions(line string, resStack *stack.Stack[string]) {
 			panic(err)
 		}
 		resStack.Push("linux or macos: " + v)
-		return
+		return true
 	}
 
 	// Check for on_linux.
 	regex = regexp.MustCompile(onLinuxPattern)
 	if regex.MatchString(line) {
 		resStack.Push("linux")
-		return
+		return true
 	}
 
 	// Check for on_macos.
 	regex = regexp.MustCompile(onMacosPattern)
 	if regex.MatchString(line) {
 		resStack.Push("macos")
-		return
+		return true
 	}
 
 	// Check for on_arm.
 	regex = regexp.MustCompile(onArmPattern)
 	if regex.MatchString(line) {
 		resStack.Push("arm")
-		return
+		return true
 	}
 
 	// Check for on_intel.
 	regex = regexp.MustCompile(onIntelPattern)
 	if regex.MatchString(line) {
 		resStack.Push("intel")
-		return
+		return true
 	}
 
 	// Check for on_macos versions e.g. "on_mojave :or_newer".
@@ -324,14 +331,17 @@ func checkDependencyRestrictions(line string, resStack *stack.Stack[string]) {
 			req += v
 		}
 		resStack.Push(req)
-		return
+		return true
 	}
 
 	// Check for DevelopmentTools.clang_build_version.
 	clangRestriction := getClangRestriction(line)
 	if clangRestriction != "" {
 		resStack.Push("clang version " + clangRestriction)
+		return true
 	}
+
+	return false
 }
 
 // formatVersion returns a formatted string from the given version.

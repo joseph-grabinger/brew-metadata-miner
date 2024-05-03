@@ -160,9 +160,9 @@ const (
 	// formulaRequirementPattern matches a sequence beginning with two or more whitespace characters,
 	// followed by the literal string "depends_on",
 	// followed by one or more word characters (including ':'), which are captured.
-	// Further, an optional sequence of whitespace characters, word characters and
+	// Further, an optional sequence of whitespace characters, word characters, numbers and
 	// (',', '.', '"', ':', '[', ']') is matched and captured.
-	formulaRequirementPattern = `^\s{2,}depends_on\s+([:\w]+)\s*([\s\w:,."\[\]]+)?`
+	formulaRequirementPattern = `^\s{2,}depends_on\s+([:\w]+)\s*([\s\w\d<>=:,."\[\]]+)?`
 
 	// clangVersionPattern matches a sequence beginning with the literal string "if",
 	// followed by one or more whitespace characters, a word, the word character "clang_build_version",
