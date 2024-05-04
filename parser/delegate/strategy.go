@@ -2,7 +2,6 @@ package delegate
 
 import (
 	"fmt"
-	"regexp"
 )
 
 // ParseStrategy represents a strategy for parsing lines and extracting relevant information.
@@ -17,9 +16,6 @@ type ParseStrategy interface {
 
 	// getName returns the name of the field.
 	getName() string
-
-	// getPattern returns the pattern used by the strategy.
-	getPattern() string
 }
 
 // SingleLineMatcher acts as a concrete strategy.
@@ -30,20 +26,20 @@ type SingleLineMatcher[T any] struct {
 	// name of the field.
 	name string
 
-	// pattern to match the field.
-	pattern string
+	// isDefaultPattern to match the field.
+	isDefaultPattern func(string) (bool, []string)
 
 	// matches is the slice of matches found in the field.
 	matches []string
 }
 
 // NewSLM creates a new instance of singleLineMatcher.
-func NewSLM[T any](name string, pattern string, fp FormulaParser) *SingleLineMatcher[T] {
+func NewSLM[T any](name string, isDefaultPattern func(string) (bool, []string), fp FormulaParser) *SingleLineMatcher[T] {
 	return &SingleLineMatcher[T]{
-		name:          name,
-		pattern:       pattern,
-		FormulaParser: fp,
-		matches:       make([]string, 0),
+		name:             name,
+		isDefaultPattern: isDefaultPattern,
+		FormulaParser:    fp,
+		matches:          make([]string, 0),
 	}
 }
 
@@ -51,22 +47,15 @@ func (f *SingleLineMatcher[T]) getName() string {
 	return f.name
 }
 
-func (f *SingleLineMatcher[T]) getPattern() string {
-	return f.pattern
-}
-
 // MatchesLine checks if the given line matches the pattern defined in the singleLineMatcher.
 // It returns true if there is a match, and false otherwise.
 // If there is a match it also sets the matches property to the matches found in the line.
 func (f *SingleLineMatcher[T]) MatchesLine(line string) bool {
-	regex := regexp.MustCompile(f.pattern)
-	matches := regex.FindStringSubmatch(line)
-
-	isMatch := len(matches) >= 2
-	if isMatch {
+	b, matches := f.isDefaultPattern(line)
+	if b {
 		f.matches = matches
 	}
-	return isMatch
+	return b
 }
 
 // ExtractFromLine returns the previously matched information at index 1 of the matches slice.
@@ -96,9 +85,9 @@ type MultiLineMatcher[T any] struct {
 }
 
 // NewMLM creates a new instance of multiLineMatcher.
-func NewMLM[T any](name string, pattern string, fp FormulaParser, isBeginSeq func(line string) bool, isEndSeq func(line string) bool, clean func([]string) T) *MultiLineMatcher[T] {
+func NewMLM[T any](name string, isDefaultPattern func(string) (bool, []string), fp FormulaParser, isBeginSeq func(line string) bool, isEndSeq func(line string) bool, clean func([]string) T) *MultiLineMatcher[T] {
 	return &MultiLineMatcher[T]{
-		SingleLineMatcher: *NewSLM[T](name, pattern, fp),
+		SingleLineMatcher: *NewSLM[T](name, isDefaultPattern, fp),
 		isBeginSequence:   isBeginSeq,
 		isEndSequence:     isEndSeq,
 		cleanSequence:     clean,

@@ -15,14 +15,17 @@ const (
 	urlPattern = `^\s{2}url\s+"([^"]+)"`
 
 	// urlBeginPattern matches two consecutive spaces,
-	// followed by the literal string "stable do".
-	urlBeginPattern = `^\s{2}stable\s+do`
+	// followed by the literal string "stable do",
+	// or the literal string "url" followed by one ore more whitespaces
+	// with a string enclosed in double quotes, which is captured,
+	// followed by a trailing comma.
+	urlBeginPattern = `(?:\s{2}stable\s+do|^\s{2}url\s+"([^"]+)",)`
 
-	// stableUrlPattern matches four consecutive spaces,
+	// stableUrlPattern matches two or more consecutive spaces,
 	// followed by the literal string "url",
 	// followed by a string enclosed in double quotes, which is captured.
 	// Further, an optional trailing comma is matched.
-	stableUrlPattern = `^\s{4}url\s+"([^"]+)"(,?)`
+	stableUrlPattern = `^\s{2,}url\s+"([^"]+)"(,?)`
 
 	// stableResourcePattern matches four consecutive spaces,
 	// followed by the literal string "resource".
@@ -32,11 +35,21 @@ const (
 	// followed by the literal string "patch".
 	stablePatchPattern = `^\s{4,}patch\s+`
 
-	// tagPattern matches eight consecutive spaces,
+	// tagPattern matches four or more consecutive spaces,
 	// followed by the literal string "tag:",
 	// followed by one or more whitespace characters,
 	// followed by a string enclosed in double quotes, which is captured.
-	tagPattern = `^\s{8}tag:\s+"([^"]+)"`
+	tagPattern = `^\s{4,}tag:\s+"([^"]+)"`
+
+	// tagExtractPattern matches the literal string "tag:",
+	// followed by one or more whitespace characters,
+	// followed by a string enclosed in double quotes, which is captured.
+	tagExtractPattern = `tag:\s+"([^"]+)"`
+
+	// revisionPattern matches two consecutive spaces,
+	// followed by the literal string "revision:",
+	// followed by one or more whitepaces.
+	revisionPattern = `^\s{2,}revision:\s+`
 
 	// mirrorPattern matches two consecutive spaces,
 	// folowed by the literal string "mirror",
@@ -76,10 +89,6 @@ const (
 	// beginHeadPattern matches two consecutive spaces,
 	// followed by the string "head do".
 	beginHeadPattern = `^\s{2}head do\s*`
-
-	// dependencyPattern matches two consecutive spaces,
-	// followed by the string "depends_on", and then a string enclosed in double quotes.
-	dependencyPattern = `^\s{2}depends_on\s+"[^"]+"`
 
 	// dependencyTypePattern matches the "=>" litertal,
 	// followed by optional whitespace and an optional opening square bracket,

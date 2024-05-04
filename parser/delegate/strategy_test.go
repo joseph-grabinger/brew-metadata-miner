@@ -163,7 +163,7 @@ var MlmUrlTests = []struct {
 		},
 	},
 	{
-		input: `stable do
+		input: `  stable do
     url "https://github.com/chakra-core/ChakraCore/archive/refs/tags/v1.11.24.tar.gz"
     sha256 "b99e85f2d0fa24f2b6ccf9a6d2723f3eecfe986a9d2c4d34fa1fd0d015d0595e"
 
@@ -190,6 +190,46 @@ var MlmUrlTests = []struct {
 				Lst:                []*types.Dependency{},
 				SystemRequirements: "x86_64",
 			},
+		},
+	},
+	{
+		input: `  url "https://github.com/zyantific/zydis.git",
+      tag:      "v4.1.0",
+      revision: "569320ad3c4856da13b9dbf1f0d9e20bda63870e"
+  license "MIT"`, // zydis.rb
+		expected: &types.Stable{
+			URL: "https://github.com/zyantific/zydis/tree/v4.1.0",
+			Dependencies: &types.Dependencies{
+				Lst:                []*types.Dependency{},
+				SystemRequirements: "",
+			},
+		},
+	},
+	{
+		input: `  stable do
+		url "https://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2", using: :homebrew_curl
+		mirror "https://ftp.osuosl.org/pub/xiph/releases/theora/libtheora-1.1.1.tar.bz2"
+		sha256 "b6ae1ee2fa3d42ac489287d3ec34c5885730b1296f0801ae577a35193d3affbc"
+	
+		# Fix -flat_namespace being used on Big Sur and later.
+		patch do
+		  url "https://raw.githubusercontent.com/Homebrew/formula-patches/03cf8088210822aa2c1ab544ed58ea04c897d9c4/libtool/configure-pre-0.4.2.418-big_sur.diff"
+		  sha256 "83af02f2aa2b746bb7225872cab29a253264be49db0ecebb12f841562d9a2923"
+		end
+	  end`, // theora.rb
+		expected: &types.Stable{
+			URL: "https://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2",
+			Dependencies: &types.Dependencies{
+				Lst:                []*types.Dependency{},
+				SystemRequirements: "",
+			},
+		},
+	},
+	{
+		input: `  url "https://gitlab.gnome.org/GNOME/phodav.git", tag: "v3.0", revision: "d733fd853f0664ad8035b1b85604c62de0e97098"
+		license "LGPL-2.1-only"`, // phodav.rb
+		expected: &types.Stable{
+			URL: "https://gitlab.gnome.org/GNOME/phodav/tree/v3.0",
 		},
 	},
 }
@@ -651,6 +691,12 @@ var MlmHeadTests = []struct {
 	{
 		input:    `  head "http://hg.code.sf.net/p/optipng/mercurial", using: :hg`, // optipng.rb
 		expected: &types.Head{URL: "http://hg.code.sf.net/p/optipng/mercurial"},
+	},
+	{
+		input: `  license "BSD-3-Clause"
+		head "https://svn.code.sf.net/p/spimsimulator/code/"
+	`, // spim.rb
+		expected: &types.Head{URL: "https://svn.code.sf.net/p/spimsimulator/code/"},
 	},
 }
 

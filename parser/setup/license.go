@@ -20,6 +20,14 @@ func cleanLicenseSequence(sequence []string) string {
 	return strings.Join(sequence, "")
 }
 
+// isDefaultLicensePattern returns true if the given line
+// matches the license pattern. It also returns the matches.
+func isDefaultLicensePattern(line string) (bool, []string) {
+	regex := regexp.MustCompile(licensePattern)
+	matches := regex.FindStringSubmatch(line)
+	return len(matches) >= 2, matches
+}
+
 // isBeginLicenseSequence returns true if the given line
 // is the beginning of a license sequence.
 func isBeginLicenseSequence(line string) bool {

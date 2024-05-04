@@ -19,25 +19,25 @@ func BuildStrategies(fp delegate.FormulaParser) []delegate.ParseStrategy {
 
 // BuildURLMatcher returns a SingleLineMatcher for the URL field.
 func BuildURLMatcher(fp delegate.FormulaParser) *delegate.MultiLineMatcher[*types.Stable] {
-	return delegate.NewMLM[*types.Stable]("url", urlPattern, fp, isBeginURLSequence, isEndURLSequence, cleanURLSequence)
+	return delegate.NewMLM[*types.Stable]("url", isDefaultURLPattern, fp, isBeginURLSequence, isEndURLSequence, cleanURLSequence)
 }
 
 // BuildMirrorMatcher returns a SingleLineMatcher for the mirror field.
 func BuildMirrorMatcher(fp delegate.FormulaParser) *delegate.SingleLineMatcher[string] {
-	return delegate.NewSLM[string]("mirror", mirrorPattern, fp)
+	return delegate.NewSLM[string]("mirror", isDefaultMirrorPattern, fp)
 }
 
 // BuildLicenseMatcher returns a MultiLineMatcher for the license field.
 func BuildLicenseMatcher(fp delegate.FormulaParser) *delegate.MultiLineMatcher[string] {
-	return delegate.NewMLM[string]("license", licensePattern, fp, isBeginLicenseSequence, isEndLicenseSequence, cleanLicenseSequence)
+	return delegate.NewMLM[string]("license", isDefaultLicensePattern, fp, isBeginLicenseSequence, isEndLicenseSequence, cleanLicenseSequence)
 }
 
 // BuildHeadMatcher returns a MultiLineMatcher for the head field.
 func BuildHeadMatcher(fp delegate.FormulaParser) *delegate.MultiLineMatcher[*types.Head] {
-	return delegate.NewMLM[*types.Head]("head", headURLPattern, fp, isBeginHeadSequence, isEndHeadSequence, cleanHeadSequence)
+	return delegate.NewMLM[*types.Head]("head", isDefaultHeadPattern, fp, isBeginHeadSequence, isEndHeadSequence, cleanHeadSequence)
 }
 
 // BuildDependencyMatcher returns a MultiLineMatcher for the dependency fields.
 func BuildDependencyMatcher(fp delegate.FormulaParser) *delegate.MultiLineMatcher[*types.Dependencies] {
-	return delegate.NewMLM[*types.Dependencies]("dependency", dependencyPattern, fp, isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence)
+	return delegate.NewMLM[*types.Dependencies]("dependency", isDefaultDependencyPattern, fp, isBeginDependencySequence, isEndDependencySequence, cleanDependencySequence)
 }

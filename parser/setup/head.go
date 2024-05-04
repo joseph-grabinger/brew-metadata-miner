@@ -45,6 +45,14 @@ func cleanHeadSequence(sequence []string) *types.Head {
 	return head
 }
 
+// isDefaultHeadPattern returns true if the given line
+// matches the head pattern. It also returns the matches.
+func isDefaultHeadPattern(line string) (bool, []string) {
+	regex := regexp.MustCompile(headURLPattern)
+	matches := regex.FindStringSubmatch(line)
+	return len(matches) >= 2, matches
+}
+
 // isBeginHeadSequence returns true if the given line
 // is the beginning of a head sequence.
 func isBeginHeadSequence(line string) bool {

@@ -241,7 +241,7 @@ func checkFormulaRequirements(line string, reqStack *stack.Stack[string]) bool {
 				req += " " + formatRequirements(matches[2]) + " (on macos)"
 			}
 		case "arch":
-			req = formatRequirements(matches[2])
+			req = formatRequirements(strings.TrimSpace(matches[2]))
 		default:
 			log.Printf("Incomplete formula requirement: %s, %s\n", req, matches[2])
 			return false

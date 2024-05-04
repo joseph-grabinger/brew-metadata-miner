@@ -11,6 +11,12 @@ func cleanDependencySequence(sequence []string) *types.Dependencies {
 	return cleanDepSequence(sequence, []skipSequence{}, 0)
 }
 
+// isDefaultDependencyPattern always returns false
+// since dependecies can't be extracted from a single line.
+func isDefaultDependencyPattern(line string) (bool, []string) {
+	return false, []string{}
+}
+
 // isBeginDependencySequence returns true if the given line
 // is the beginning of a dependency sequence.
 func isBeginDependencySequence(line string) bool {
