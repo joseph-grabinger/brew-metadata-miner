@@ -179,6 +179,16 @@ func TestParse_Reliabity(t *testing.T) {
 			assert.Equal(t, apiFormula["license"], formula.License, "expected: %s as license of %s, got: %s", apiFormula["license"], name, formula.License)
 		}
 
+		// Assert archive urls are equal.
+		if archiveUrl, ok := getNestedMapValue(apiFormula, "urls", "stable", "url"); ok {
+			if tag, ok := getNestedMapValue(apiFormula, "urls", "stable", "tag"); ok {
+				archiveUrl = strings.TrimSuffix(archiveUrl, ".git")
+				archiveUrl = strings.TrimRight(archiveUrl, "/")
+				archiveUrl += "/tree/" + tag
+			}
+			assert.Equal(t, archiveUrl, formula.ArchiveURL, "expected: %s as archive url of %s, got: %s", archiveUrl, name, formula.ArchiveURL)
+		}
+
 		// Assert heads are equal.
 		if headUrl, ok := getNestedMapValue(apiFormula, "urls", "head", "url"); ok {
 			assert.Equal(t, headUrl, formula.RepoURL, "expected: %s as head url of %s, got: %s", headUrl, name, formula.RepoURL)
@@ -294,6 +304,7 @@ func getCommonDependencies(s []string, deps []*types.Dependency) (common []*type
 	return common, len(common) == len(s)
 }
 
+// getNestedMapValue returns the value of the given nested keys from the given map.
 func getNestedMapValue(m map[string]interface{}, keys ...string) (value string, ok bool) {
 	var temp interface{} = m
 
