@@ -4,7 +4,7 @@ Metadata collection of formulae from the [HomeBrew core](https://github.com/Home
 
 ## Configuration
 
-The configuration is done in the `config.json` file. The file contains the following fields:
+The configuration is done in the `config.yml` file. The file contains the following fields:
    * `output_dir`: The directory where the metadata will be stored.
    * `core_repo_url`: The URL of the HomeBrew core repository.
    * `core_repo_branch`: The branch of the HomeBrew core repository.

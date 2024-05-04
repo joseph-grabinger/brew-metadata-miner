@@ -265,7 +265,7 @@ func getDependeciesByType(formula *types.Formula, depType string) []string {
 // This is used to check if the restriction is the same as the one in the API,
 // since the API interpretes certain restirctions as default.
 func isDefaultRestriction(restr string) bool {
-	// clang version >= 1500
+	// clang version >= 1000
 	clangExp := regexp.MustCompile(`clang version >= [1-9][0-9]{3,}[^()]*`)
 
 	return restr == "" ||
