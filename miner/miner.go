@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"main/config"
-	"main/miner/delegate"
+	"main/miner/parser"
 	"main/miner/setup"
 	"main/miner/types"
 )
@@ -117,7 +117,7 @@ func (p *miner) WriteFormulae() error {
 // extractFromFile extracts a formula from a file and returns it as a Formula struct.
 func extractFromFile(file *os.File) (*types.SourceFormula, error) {
 	scanner := bufio.NewScanner(file)
-	formulaParser := &delegate.FormulaParser{Scanner: scanner}
+	formulaParser := &parser.FormulaParser{Scanner: scanner}
 
 	base := filepath.Base(file.Name())
 	name := strings.TrimSuffix(base, ".rb")

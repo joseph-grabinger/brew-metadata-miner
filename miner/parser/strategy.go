@@ -1,4 +1,4 @@
-package delegate
+package parser
 
 import (
 	"fmt"
