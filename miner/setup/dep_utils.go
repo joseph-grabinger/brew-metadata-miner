@@ -7,11 +7,12 @@ import (
 	"slices"
 	"strings"
 
-	"main/parser/types"
+	"main/miner/types"
 	"main/stack"
 )
 
-// dependencySet represents a set of dependencies, stored in a map by their name.
+// dependencySet represents a set of dependencies, stored in a map by their identifier.
+// The identifier is the dependency name and type concatenated by a comma.
 type dependecySet map[string]*types.Dependency
 
 // add adds a dependency to the set.

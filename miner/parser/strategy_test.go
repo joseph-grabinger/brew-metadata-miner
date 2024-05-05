@@ -1,4 +1,4 @@
-package delegate_test
+package parser_test
 
 import (
 	"bufio"
@@ -6,14 +6,14 @@ import (
 	"strings"
 	"testing"
 
-	"main/parser/delegate"
-	"main/parser/setup"
-	"main/parser/types"
+	"main/miner/parser"
+	"main/miner/setup"
+	"main/miner/types"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var MlmUrlTests = []struct {
+var mlmUrlTests = []struct {
 	input    string
 	expected *types.Stable
 }{
@@ -235,8 +235,8 @@ var MlmUrlTests = []struct {
 }
 
 func TestMultiLineMatcherURL(t *testing.T) {
-	for _, test := range MlmUrlTests {
-		formulaParser := &delegate.FormulaParser{
+	for _, test := range mlmUrlTests {
+		formulaParser := &parser.FormulaParser{
 			Scanner: bufio.NewScanner(strings.NewReader(test.input)),
 		}
 
@@ -260,7 +260,7 @@ func TestMultiLineMatcherURL(t *testing.T) {
 	}
 }
 
-var MlmDependencyTests = []struct {
+var mlmDependencyTests = []struct {
 	input    string
 	expected *types.Dependencies
 }{
@@ -519,8 +519,8 @@ var MlmDependencyTests = []struct {
 }
 
 func TestMultiLineMatcherDependencies(t *testing.T) {
-	for _, test := range MlmDependencyTests {
-		formulaParser := &delegate.FormulaParser{
+	for _, test := range mlmDependencyTests {
+		formulaParser := &parser.FormulaParser{
 			Scanner: bufio.NewScanner(strings.NewReader(test.input)),
 		}
 
@@ -550,7 +550,7 @@ func TestMultiLineMatcherDependencies(t *testing.T) {
 	}
 }
 
-var MlmLicenseTests = []struct {
+var mlmLicenseTests = []struct {
 	input    string
 	expected string
 }{
@@ -633,8 +633,8 @@ var MlmLicenseTests = []struct {
 }
 
 func TestMultiLineMatcherLicense(t *testing.T) {
-	for _, test := range MlmLicenseTests {
-		formulaParser := &delegate.FormulaParser{
+	for _, test := range mlmLicenseTests {
+		formulaParser := &parser.FormulaParser{
 			Scanner: bufio.NewScanner(strings.NewReader(test.input)),
 		}
 
@@ -662,7 +662,7 @@ func TestMultiLineMatcherLicense(t *testing.T) {
 	}
 }
 
-var MlmHeadTests = []struct {
+var mlmHeadTests = []struct {
 	input    string
 	expected *types.Head
 }{
@@ -701,8 +701,8 @@ var MlmHeadTests = []struct {
 }
 
 func TestMultiLineMatcherHead(t *testing.T) {
-	for _, test := range MlmHeadTests {
-		formulaParser := &delegate.FormulaParser{
+	for _, test := range mlmHeadTests {
+		formulaParser := &parser.FormulaParser{
 			Scanner: bufio.NewScanner(strings.NewReader(test.input)),
 		}
 

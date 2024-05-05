@@ -4,10 +4,10 @@ import "fmt"
 
 // RegEx patterns for parsing Formula fields.
 const (
-	// HomepagePattern matches two consecutive spaces,
+	// homepagePattern matches two consecutive spaces,
 	// followed by the literal string "homepage",
 	// followed by a URL enclosed in double quotes, which is captured.
-	HomepagePattern = `^\s{2}homepage\s+"([^"]+)"`
+	homepagePattern = `^\s{2}homepage\s+"([^"]+)"`
 
 	// urlPattern matches two consecutive spaces,
 	// followed by the literal the string "url",

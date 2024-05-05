@@ -3,7 +3,7 @@ package setup
 import (
 	"regexp"
 
-	"main/parser/types"
+	"main/miner/types"
 )
 
 // cleanDependencySequence returns a cleaned slice of dependencies from a given sequence.

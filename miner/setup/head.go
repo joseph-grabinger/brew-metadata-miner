@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"slices"
 
-	"main/parser/types"
+	"main/miner/types"
 )
 
 // cleanHeadSequence returns a cleaned head from a sequence.

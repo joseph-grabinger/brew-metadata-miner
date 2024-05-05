@@ -1,4 +1,4 @@
-package parser
+package miner
 
 import (
 	"encoding/json"
@@ -12,12 +12,12 @@ import (
 	"testing"
 
 	"main/config"
-	"main/parser/types"
+	"main/miner/types"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var ParseFromFileTests = []struct {
+var extractFromFileTests = []struct {
 	inputFilePath string
 	expected      *types.SourceFormula
 }{
@@ -123,15 +123,15 @@ var ParseFromFileTests = []struct {
 	},
 }
 
-func TestParseFromFile(t *testing.T) {
-	for _, test := range ParseFromFileTests {
+func TestExtractFromFile(t *testing.T) {
+	for _, test := range extractFromFileTests {
 		file, err := os.Open(test.inputFilePath)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer file.Close()
 
-		formula, err := parseFromFile(file)
+		formula, err := extractFromFile(file)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -143,20 +143,20 @@ func TestParseFromFile(t *testing.T) {
 	}
 }
 
-func TestParse_Reliabity(t *testing.T) {
+func TestReadFormulae(t *testing.T) {
 	config := &config.Config{}
 	config.CoreRepo.Dir = "../tmp/homebrew-core"
 
-	parser := NewParser(config)
+	parser := NewMiner(config)
 
-	if err := parser.Parse(); err != nil {
+	if err := parser.ReadFormulae(); err != nil {
 		log.Fatal(err)
 	}
 
 	jsonLst := getJSONFromAPI()
 
 	// Assert total number of formulas.
-	assert.LessOrEqual(t, len(jsonLst), len(parser.formulas), "expected: %d formulas from API, got: %d from core repo", len(jsonLst), len(parser.formulas))
+	assert.LessOrEqual(t, len(jsonLst), len(parser.formulae), "expected: %d formulas from API, got: %d from core repo", len(jsonLst), len(parser.formulae))
 
 	for _, apiFormula := range jsonLst {
 		name, ok := apiFormula["name"].(string)
@@ -166,7 +166,7 @@ func TestParse_Reliabity(t *testing.T) {
 		}
 
 		// Check if formula exists in parser.
-		formula, ok := parser.formulas[name]
+		formula, ok := parser.formulae[name]
 		if !ok {
 			t.Errorf("formula %s not found", name)
 			continue
