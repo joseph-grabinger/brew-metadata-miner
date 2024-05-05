@@ -116,8 +116,8 @@ func (p *parser) writeFormulas() error {
 	defer writer.Flush()
 
 	for _, formula := range p.formulas {
-		// Write repo line type.
-		line := formula.FormatRepoLine()
+		// Write package line.
+		line := formula.FormatPackageLine()
 		_, err := writer.WriteString(line)
 		if err != nil {
 			return err
