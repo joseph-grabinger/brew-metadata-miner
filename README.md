@@ -10,6 +10,7 @@ The configuration is done in the `config.yml` file. The file contains the follow
    * `core_repo_branch`: The branch of the HomeBrew core repository.
    * `core_repo_dir`: The path to the core repository.
    * `core_repo_clone`: A boolean value indicating whether the core repository should be cloned or not.
+   * `max_workers`: The maximum number of workers to use when reading the formulae.
 
 
 ## Export format of the metadata

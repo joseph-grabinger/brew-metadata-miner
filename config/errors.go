@@ -31,4 +31,7 @@ var (
 
 	// ErrEmptyCoreRepoBranch is returned when the core repository branch is empty.
 	ErrEmptyCoreRepoBranch = fmt.Errorf("the core repository branch is empty")
+
+	// ErrInvalidMaxWorkers is returned when the number of workers is invalid.
+	ErrInvalidMaxWorkers = fmt.Errorf("invalid number of workers")
 )
