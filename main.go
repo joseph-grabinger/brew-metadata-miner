@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"main/config"
-	"main/parser"
+	"main/miner"
 
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
@@ -28,7 +28,7 @@ func main() {
 	fmt.Println("Successfully validated the configuration")
 
 	if config.CoreRepo.Clone {
-		// clone the core repository
+		// Clone the core repository.
 		_, err = git.PlainClone(config.CoreRepo.Dir, false, &git.CloneOptions{
 			URL:           config.CoreRepo.URL,
 			ReferenceName: plumbing.ReferenceName("refs/heads/" + config.CoreRepo.Branch),
@@ -41,19 +41,18 @@ func main() {
 		fmt.Println("Successfully cloned the core repository")
 	}
 
-	parser := parser.NewParser(config)
+	miner := miner.NewMiner(config)
 
-	if err := parser.Parse(); err != nil {
+	if err := miner.ReadFormulae(); err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("Successfully parsed all formulae from the core repository")
 
-	if err := parser.Pipe(); err != nil {
+	if err := miner.WriteFormulae(); err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("Successfully piped all formulae to the output file")
 
-	// parser.Analyze()
 }

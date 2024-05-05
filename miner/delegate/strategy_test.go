@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"main/parser/delegate"
-	"main/parser/setup"
-	"main/parser/types"
+	"main/miner/delegate"
+	"main/miner/setup"
+	"main/miner/types"
 
 	"github.com/stretchr/testify/assert"
 )

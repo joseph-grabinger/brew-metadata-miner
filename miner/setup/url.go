@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"main/parser/types"
+	"main/miner/types"
 )
 
 // cleanURLSequence returns a cleaned string from a sequence.

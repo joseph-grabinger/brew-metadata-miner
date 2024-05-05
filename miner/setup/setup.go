@@ -1,8 +1,8 @@
 package setup
 
 import (
-	"main/parser/delegate"
-	"main/parser/types"
+	"main/miner/delegate"
+	"main/miner/types"
 )
 
 // BuildStrategies returns a list of parse strategies.

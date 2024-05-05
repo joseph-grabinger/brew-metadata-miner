@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"main/parser/types"
+	"main/miner/types"
 	"main/stack"
 )
 

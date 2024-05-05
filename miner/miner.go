@@ -1,4 +1,4 @@
-package parser
+package miner
 
 import (
 	"bufio"
@@ -11,55 +11,28 @@ import (
 	"strings"
 
 	"main/config"
-	"main/parser/delegate"
-	"main/parser/setup"
-	"main/parser/types"
+	"main/miner/delegate"
+	"main/miner/setup"
+	"main/miner/types"
 )
 
-type parser struct {
+type miner struct {
 	config *config.Config
 
-	// A map of formulas, where the key is the name of the formula.
-	formulas map[string]*types.Formula
+	// A map of formulae, where the key is the name of the formula.
+	formulae map[string]*types.Formula
 }
 
-// NewParser creates a new parser.
-func NewParser(config *config.Config) *parser {
-	return &parser{
+// NewMiner creates a new parser.
+func NewMiner(config *config.Config) *miner {
+	return &miner{
 		config:   config,
-		formulas: make(map[string]*types.Formula),
+		formulae: make(map[string]*types.Formula),
 	}
 }
 
-// Parse parses the core repository and extracts the formulas.
-func (p *parser) Parse() error {
-	return p.readFormulas()
-}
-
-func (p *parser) Pipe() error {
-	return p.writeFormulas()
-}
-
-func (p *parser) Analyze() {
-	valid := make([]*types.Formula, 0)
-	noRepo := make([]*types.Formula, 0)
-
-	for _, value := range p.formulas {
-		if value.RepoURL != "" {
-			valid = append(valid, value)
-		} else {
-			noRepo = append(noRepo, value)
-		}
-	}
-
-	fmt.Println("Total number of formulas:", len(p.formulas))
-	fmt.Println("Number of valid formulas:", len(valid))
-	fmt.Println("Number of formulas without a repository:", len(noRepo))
-	fmt.Println("Formulas without a repository:", noRepo)
-}
-
-// ReadFormaulas reads all formulas from the core repository into the formulas map.
-func (p *parser) readFormulas() error {
+// ReadFormaulas reads all formulae from the core repository into the formulas map.
+func (p *miner) ReadFormulae() error {
 	// Match the fomula files.
 	matches, err := filepath.Glob(p.config.CoreRepo.Dir + "/Formula/**/*.rb")
 	if err != nil {
@@ -83,14 +56,14 @@ func (p *parser) readFormulas() error {
 		defer file.Close()
 
 		// Parse Formula from file.
-		sourceFormula, err := parseFromFile(file)
+		sourceFormula, err := extractFromFile(file)
 		if err != nil {
 			log.Printf("Error parsing file %s: %v\n", path, err)
 			return err
 		}
 
 		formula := types.FromSourceFormula(sourceFormula)
-		p.formulas[formula.Name] = formula
+		p.formulae[formula.Name] = formula
 
 		log.Println("Successfully parsed formula:", formula)
 	}
@@ -98,7 +71,8 @@ func (p *parser) readFormulas() error {
 	return nil
 }
 
-func (p *parser) writeFormulas() error {
+// WriteFormulae writes the formulae to the output file.
+func (p *miner) WriteFormulae() error {
 	path := filepath.Join(p.config.OutputDir, "deps-brew.tsv")
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -115,7 +89,7 @@ func (p *parser) writeFormulas() error {
 	writer := bufio.NewWriter(file)
 	defer writer.Flush()
 
-	for _, formula := range p.formulas {
+	for _, formula := range p.formulae {
 		// Write package line.
 		line := formula.FormatPackageLine()
 		_, err := writer.WriteString(line)
@@ -125,7 +99,7 @@ func (p *parser) writeFormulas() error {
 
 		// Write dependency lines.
 		for _, dep := range formula.Dependencies {
-			f := p.formulas[dep.Name]
+			f := p.formulae[dep.Name]
 			if f == nil {
 				panic("Dependency " + dep.Name + " not found in formula " + formula.Name)
 			}
@@ -140,8 +114,8 @@ func (p *parser) writeFormulas() error {
 	return nil
 }
 
-// parseFromFile parses a formula from a file into a Formula struct.
-func parseFromFile(file *os.File) (*types.SourceFormula, error) {
+// extractFromFile extracts a formula from a file and returns it as a Formula struct.
+func extractFromFile(file *os.File) (*types.SourceFormula, error) {
 	scanner := bufio.NewScanner(file)
 	formulaParser := &delegate.FormulaParser{Scanner: scanner}
 
