@@ -2,8 +2,6 @@ package parser
 
 import (
 	"bufio"
-	"fmt"
-	"regexp"
 )
 
 // FormulaParser acts as context for parsing fields.
@@ -38,21 +36,4 @@ func (fp *FormulaParser) ParseFields(fields []ParseStrategy) (map[string]interfa
 	}
 
 	return results, nil
-}
-
-// ParseField parses the field with the given name and pattern from a file.
-// It returns the value of the field.
-func (fp *FormulaParser) ParseField(pattern, name string) (string, error) {
-	for fp.Scanner.Scan() {
-		line := fp.Scanner.Text()
-
-		regex := regexp.MustCompile(pattern)
-		matches := regex.FindStringSubmatch(line)
-
-		if len(matches) >= 2 {
-			return matches[1], nil
-		}
-	}
-
-	return "", fmt.Errorf("no %s found for Formula", name)
 }

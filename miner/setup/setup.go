@@ -9,12 +9,18 @@ import (
 // The list contains a strategy for each field, parsed from the formula file.
 func BuildStrategies(fp parser.FormulaParser) []parser.ParseStrategy {
 	return []parser.ParseStrategy{
+		BuildHomepageMatcher(fp),
 		BuildURLMatcher(fp),
 		BuildMirrorMatcher(fp),
 		BuildLicenseMatcher(fp),
 		BuildHeadMatcher(fp),
 		BuildDependencyMatcher(fp),
 	}
+}
+
+// BuildHomepageMatcher returns a SingleLineMatcher for the homepage field.
+func BuildHomepageMatcher(fp parser.FormulaParser) *parser.SingleLineMatcher[string] {
+	return parser.NewSLM[string]("homepage", isDefaultHomepagePattern, fp)
 }
 
 // BuildURLMatcher returns a SingleLineMatcher for the URL field.

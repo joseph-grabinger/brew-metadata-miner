@@ -124,12 +124,6 @@ func extractFromFile(file *os.File) (*types.SourceFormula, error) {
 
 	formula := &types.SourceFormula{Name: name}
 
-	homepage, err := formulaParser.ParseField(setup.HomepagePattern, "homepage")
-	if err != nil {
-		return nil, err
-	}
-	formula.Homepage = homepage
-
 	fields := setup.BuildStrategies(*formulaParser)
 
 	results, err := formulaParser.ParseFields(fields)
@@ -139,6 +133,9 @@ func extractFromFile(file *os.File) (*types.SourceFormula, error) {
 	}
 
 	// Set the fields of the formula.
+	if results["homepage"] != nil {
+		formula.Homepage = results["homepage"].(string)
+	}
 	if results["url"] != nil {
 		formula.Stable = results["url"].(*types.Stable)
 	}
