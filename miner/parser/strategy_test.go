@@ -18,6 +18,70 @@ var mlmUrlTests = []struct {
 	expected *types.Stable
 }{
 	{
+		input: `class Icecast < Formula
+  desc "Streaming MP3 audio server"
+  homepage "https://icecast.org/"
+  url "https://downloads.xiph.org/releases/icecast/icecast-2.4.4.tar.gz", using: :homebrew_curl
+  mirror "https://ftp.osuosl.org/pub/xiph/releases/icecast/icecast-2.4.4.tar.gz"
+  sha256 "49b5979f9f614140b6a38046154203ee28218d8fc549888596a683ad604e4d44"
+  revision 2`, // icecast.rb
+		expected: &types.Stable{
+			URL: "https://downloads.xiph.org/releases/icecast/icecast-2.4.4.tar.gz",
+		},
+	},
+	{
+		input: `  url "https://github.com/zyantific/zydis.git",
+      tag:      "v4.1.0",
+      revision: "569320ad3c4856da13b9dbf1f0d9e20bda63870e"
+  license "MIT"`, // zydis.rb
+		expected: &types.Stable{
+			URL: "https://github.com/zyantific/zydis/tree/v4.1.0",
+			Dependencies: &types.Dependencies{
+				Lst:                []*types.Dependency{},
+				SystemRequirements: "",
+			},
+		},
+	},
+	{
+		input: `  url "https://gitlab.gnome.org/GNOME/phodav.git", tag: "v3.0", revision: "d733fd853f0664ad8035b1b85604c62de0e97098"
+		license "LGPL-2.1-only"`, // phodav.rb
+		expected: &types.Stable{
+			URL: "https://gitlab.gnome.org/GNOME/phodav/tree/v3.0",
+		},
+	},
+}
+
+func TestMultiLineMatcherURL(t *testing.T) {
+	for _, test := range mlmUrlTests {
+		formulaParser := &parser.FormulaParser{
+			Scanner: bufio.NewScanner(strings.NewReader(test.input)),
+		}
+
+		mlm := setup.BuildURLMatcher(*formulaParser)
+
+		for formulaParser.Scanner.Scan() {
+			line := formulaParser.Scanner.Text()
+
+			if mlm.MatchesLine(line) {
+				stable, err := mlm.ExtractFromLine(line)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				log.Println("Matched: ", stable)
+
+				assert.Equal(t, test.expected, stable, "expected: %v, got: %v", test.expected, stable)
+				break
+			}
+		}
+	}
+}
+
+var mlmStableUrlTests = []struct {
+	input    string
+	expected *types.Stable
+}{
+	{
 		input: `  # TODO: Remove '-fcommon' workaround and switch to 'sdl2' on next release
   stable do
     url "http://www.hampa.ch/pub/pce/pce-0.2.2.tar.gz"
@@ -48,9 +112,6 @@ var mlmUrlTests = []struct {
 	  `, // action-validator.rb
 		expected: &types.Stable{
 			URL: "https://github.com/mpalmer/action-validator/archive/refs/tags/v0.6.0.tar.gz",
-			Dependencies: &types.Dependencies{
-				Lst: []*types.Dependency{},
-			},
 		},
 	},
 	{
@@ -69,9 +130,6 @@ var mlmUrlTests = []struct {
 		`, // ghostscript.rb
 		expected: &types.Stable{
 			URL: "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10030/ghostpdl-10.03.0.tar.xz",
-			Dependencies: &types.Dependencies{
-				Lst: []*types.Dependency{},
-			},
 		},
 	},
 	{
@@ -145,21 +203,6 @@ var mlmUrlTests = []struct {
   end`, // unisonlang.rb
 		expected: &types.Stable{
 			URL: "https://github.com/unisonweb/unison/tree/release/M5j",
-			Dependencies: &types.Dependencies{
-				Lst: []*types.Dependency{},
-			},
-		},
-	},
-	{
-		input: `class Icecast < Formula
-  desc "Streaming MP3 audio server"
-  homepage "https://icecast.org/"
-  url "https://downloads.xiph.org/releases/icecast/icecast-2.4.4.tar.gz", using: :homebrew_curl
-  mirror "https://ftp.osuosl.org/pub/xiph/releases/icecast/icecast-2.4.4.tar.gz"
-  sha256 "49b5979f9f614140b6a38046154203ee28218d8fc549888596a683ad604e4d44"
-  revision 2`, // icecast.rb
-		expected: &types.Stable{
-			URL: "https://downloads.xiph.org/releases/icecast/icecast-2.4.4.tar.gz",
 		},
 	},
 	{
@@ -183,25 +226,12 @@ var mlmUrlTests = []struct {
       sha256 "61c61c5376bc28ac52ec47e6d4c053eb27c04860aa4ba787a78266840ce57830"
     end
   end
-	`,
+	`, // chakra.rb
 		expected: &types.Stable{
 			URL: "https://github.com/chakra-core/ChakraCore/archive/refs/tags/v1.11.24.tar.gz",
 			Dependencies: &types.Dependencies{
 				Lst:                []*types.Dependency{},
 				SystemRequirements: "x86_64",
-			},
-		},
-	},
-	{
-		input: `  url "https://github.com/zyantific/zydis.git",
-      tag:      "v4.1.0",
-      revision: "569320ad3c4856da13b9dbf1f0d9e20bda63870e"
-  license "MIT"`, // zydis.rb
-		expected: &types.Stable{
-			URL: "https://github.com/zyantific/zydis/tree/v4.1.0",
-			Dependencies: &types.Dependencies{
-				Lst:                []*types.Dependency{},
-				SystemRequirements: "",
 			},
 		},
 	},
@@ -219,23 +249,12 @@ var mlmUrlTests = []struct {
 	  end`, // theora.rb
 		expected: &types.Stable{
 			URL: "https://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2",
-			Dependencies: &types.Dependencies{
-				Lst:                []*types.Dependency{},
-				SystemRequirements: "",
-			},
-		},
-	},
-	{
-		input: `  url "https://gitlab.gnome.org/GNOME/phodav.git", tag: "v3.0", revision: "d733fd853f0664ad8035b1b85604c62de0e97098"
-		license "LGPL-2.1-only"`, // phodav.rb
-		expected: &types.Stable{
-			URL: "https://gitlab.gnome.org/GNOME/phodav/tree/v3.0",
 		},
 	},
 }
 
-func TestMultiLineMatcherURL(t *testing.T) {
-	for _, test := range mlmUrlTests {
+func TestMultiLineMatcherStableURL(t *testing.T) {
+	for _, test := range mlmStableUrlTests {
 		formulaParser := &parser.FormulaParser{
 			Scanner: bufio.NewScanner(strings.NewReader(test.input)),
 		}

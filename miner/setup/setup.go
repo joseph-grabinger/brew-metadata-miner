@@ -11,6 +11,7 @@ func BuildStrategies(fp parser.FormulaParser) []parser.ParseStrategy {
 	return []parser.ParseStrategy{
 		BuildHomepageMatcher(fp),
 		BuildURLMatcher(fp),
+		BuildStableURLMatcher(fp),
 		BuildMirrorMatcher(fp),
 		BuildLicenseMatcher(fp),
 		BuildHeadMatcher(fp),
@@ -23,9 +24,14 @@ func BuildHomepageMatcher(fp parser.FormulaParser) *parser.SingleLineMatcher[str
 	return parser.NewSLM[string]("homepage", isDefaultHomepagePattern, fp)
 }
 
-// BuildURLMatcher returns a SingleLineMatcher for the URL field.
+// BuildURLMatcher returns a MultiLineMatcher for the URL field.
 func BuildURLMatcher(fp parser.FormulaParser) *parser.MultiLineMatcher[*types.Stable] {
 	return parser.NewMLM[*types.Stable]("url", isDefaultURLPattern, fp, isBeginURLSequence, isEndURLSequence, cleanURLSequence)
+}
+
+// BuildStableURLMatcher returns a MultiLineMatcher for the stable URL field.
+func BuildStableURLMatcher(fp parser.FormulaParser) *parser.MultiLineMatcher[*types.Stable] {
+	return parser.NewMLM[*types.Stable]("url", isDefaultStableURLPattern, fp, isBeginStableURLSequence, isEndStableURLSequence, cleanURLSequence)
 }
 
 // BuildMirrorMatcher returns a SingleLineMatcher for the mirror field.
