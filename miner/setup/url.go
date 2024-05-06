@@ -26,10 +26,9 @@ func cleanURLSequence(sequence []string) *types.Stable {
 				stable.URL = urlMatches[1]
 				if urlMatches[2] == "," {
 					continue
-				} else {
-					index = i
-					break
 				}
+				index = i
+				break
 			}
 		}
 
@@ -97,8 +96,8 @@ func isDefaultURLPattern(line string) (bool, []string) {
 	return false, nil
 }
 
-// isBeginURLSequence returns true if the given line
-// is the beginning of a URL sequence.
+// isBeginStableURLSequence returns true if the given line
+// is the beginning of a stable block sequence.
 func isBeginURLSequence(line string) bool {
 	match, _ := regexp.MatchString(urlBeginPattern, line)
 	return match && !(strings.Contains(line, "tag:") || strings.Contains(line, "using:") || strings.Contains(line, "revision:"))
@@ -107,7 +106,26 @@ func isBeginURLSequence(line string) bool {
 // isEndURLSequence returns true if the given line
 // is the end of a URL sequence.
 func isEndURLSequence(line string) bool {
-	endMatch, _ := regexp.MatchString(endPattern(2), line)
 	revMatch, _ := regexp.MatchString(revisionPattern, line)
-	return endMatch || revMatch
+	return revMatch
+}
+
+// isDefaultStableURLPattern always returns false
+// since the stable block can't be extracted from a single line.
+func isDefaultStableURLPattern(line string) (bool, []string) {
+	return false, []string{}
+}
+
+// isBeginStableURLSequence returns true if the given line
+// is the beginning of a stable block sequence.
+func isBeginStableURLSequence(line string) bool {
+	match, _ := regexp.MatchString(stableUrlBeginPattern, line)
+	return match
+}
+
+// isEndStableURLSequence returns true if the given line
+// is the end of a stable block sequence.
+func isEndStableURLSequence(line string) bool {
+	match, _ := regexp.MatchString(endPattern(2), line)
+	return match
 }

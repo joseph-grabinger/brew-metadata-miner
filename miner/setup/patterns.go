@@ -5,8 +5,8 @@ import "fmt"
 // RegEx patterns for parsing Formula fields.
 const (
 	// homepagePattern matches two consecutive spaces,
-	// followed by the literal string "homepage",
-	// followed by a URL enclosed in double quotes, which is captured.
+	// followed by the literal string "homepage", one or more spaces,
+	// and an URL enclosed in double quotes, which is captured.
 	homepagePattern = `^\s{2}homepage\s+"([^"]+)"`
 
 	// urlPattern matches two consecutive spaces,
@@ -15,16 +15,20 @@ const (
 	urlPattern = `^\s{2}url\s+"([^"]+)"`
 
 	// urlBeginPattern matches two consecutive spaces,
-	// followed by the literal string "stable do",
-	// or the literal string "url" followed by one ore more whitespaces
-	// with a string enclosed in double quotes, which is captured,
+	// followed by the literal string "url" followed by one ore more whitespaces
+	// and a string enclosed in double quotes, which is captured,
 	// followed by a trailing comma.
-	urlBeginPattern = `(?:\s{2}stable\s+do|^\s{2}url\s+"([^"]+)",)`
+	urlBeginPattern = `^\s{2}url\s+"([^"]+)",`
+
+	// stableUrlBeginPattern matches two consecutive spaces,
+	// followed by the literal string "stable", one or more whitespaces
+	// and the literal string "do".
+	stableUrlBeginPattern = `\s{2}stable\s+do`
 
 	// stableUrlPattern matches two or more consecutive spaces,
 	// followed by the literal string "url",
 	// followed by a string enclosed in double quotes, which is captured.
-	// Further, an optional trailing comma is matched.
+	// Further, an optional trailing comma is matched and captured.
 	stableUrlPattern = `^\s{2,}url\s+"([^"]+)"(,?)`
 
 	// stableResourcePattern matches four consecutive spaces,
@@ -46,14 +50,14 @@ const (
 	// followed by a string enclosed in double quotes, which is captured.
 	tagExtractPattern = `tag:\s+"([^"]+)"`
 
-	// revisionPattern matches two consecutive spaces,
+	// revisionPattern matches two or more consecutive spaces,
 	// followed by the literal string "revision:",
 	// followed by one or more whitepaces.
 	revisionPattern = `^\s{2,}revision:\s+`
 
 	// mirrorPattern matches two consecutive spaces,
-	// folowed by the literal string "mirror",
-	// followed by a string enclosed in double quotes, which is captured.
+	// folowed by the literal string "mirror", one or more whitespaces,
+	// and a string enclosed in double quotes, which is captured.
 	mirrorPattern = `^\s{2}mirror\s+"([^"]+)"`
 
 	// licensePattern matches two consecutive spaces,
