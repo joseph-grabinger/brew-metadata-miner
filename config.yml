@@ -5,3 +5,4 @@ core_repo:
   branch: master
   dir: ./tmp/homebrew-core
   clone: false
+max_workers: 10

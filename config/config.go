@@ -26,6 +26,9 @@ type Config struct {
 		// A boolean value indicating whether the core repository should be cloned or not.
 		Clone bool `yaml:"clone"`
 	} `yaml:"core_repo"`
+
+	// The maximum number of workers to use.
+	MaxWorkers int `yaml:"max_workers"`
 }
 
 // Print prints the configuration to the console.
@@ -97,6 +100,11 @@ func (c *Config) Validate() error {
 	// verify the core repository branch is not empty
 	if c.CoreRepo.Branch == "" {
 		return ErrEmptyCoreRepoBranch
+	}
+
+	// verify the number of workers is valid
+	if c.MaxWorkers <= 0 {
+		return ErrInvalidMaxWorkers
 	}
 
 	return nil
