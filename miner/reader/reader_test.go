@@ -2,9 +2,10 @@ package reader
 
 import (
 	"log"
-	"main/miner/types"
 	"os"
 	"testing"
+
+	"main/miner/types"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +15,7 @@ var extractFromFileTests = []struct {
 	expected      *types.SourceFormula
 }{
 	{
-		inputFilePath: "../../tmp/homebrew-core/Formula/i/i686-elf-gcc.rb",
+		inputFilePath: "../../test-data/i686-elf-gcc.rb",
 		expected: &types.SourceFormula{
 			Name:     "i686-elf-gcc",
 			Homepage: "https://gcc.gnu.org",
@@ -35,7 +36,7 @@ var extractFromFileTests = []struct {
 		},
 	},
 	{
-		inputFilePath: "../../tmp/homebrew-core/Formula/p/pike.rb",
+		inputFilePath: "../../test-data/pike.rb",
 		expected: &types.SourceFormula{
 			Name:     "pike",
 			Homepage: "https://pike.lysator.liu.se/",
@@ -54,10 +55,9 @@ var extractFromFileTests = []struct {
 					{Name: "nettle", DepType: []string{}},
 					{Name: "pcre", DepType: []string{}},
 					{Name: "webp", DepType: []string{}},
-					{Name: "bzip2", DepType: []string{}, Restriction: "linux"},     // on_linux
-					{Name: "krb5", DepType: []string{}, Restriction: "linux"},      // on_linux
-					{Name: "libxcrypt", DepType: []string{}, Restriction: "linux"}, // on_linux
-					// {Name: "libxslt", DepType: ""},      // on_linux
+					{Name: "bzip2", DepType: []string{}, Restriction: "linux"},          // on_linux
+					{Name: "krb5", DepType: []string{}, Restriction: "linux"},           // on_linux
+					{Name: "libxcrypt", DepType: []string{}, Restriction: "linux"},      // on_linux
 					{Name: "sqlite", DepType: []string{}, Restriction: "linux"},         // on_linux
 					{Name: "zlib", DepType: []string{}, Restriction: "linux"},           // on_linux
 					{Name: "gnu-sed", DepType: []string{"build"}, Restriction: "macos"}, // on_macos
@@ -67,7 +67,7 @@ var extractFromFileTests = []struct {
 		},
 	},
 	{
-		inputFilePath: "../../tmp/homebrew-core/Formula/s/srecord.rb",
+		inputFilePath: "../../test-data/srecord.rb",
 		expected: &types.SourceFormula{
 			Name:     "srecord",
 			Homepage: "https://srecord.sourceforge.net/",
@@ -89,7 +89,7 @@ var extractFromFileTests = []struct {
 		},
 	},
 	{
-		inputFilePath: "../../tmp/homebrew-core/Formula/g/geckodriver.rb",
+		inputFilePath: "../../test-data/geckodriver.rb",
 		expected: &types.SourceFormula{
 			Name:     "geckodriver",
 			Homepage: "https://github.com/mozilla/geckodriver",
