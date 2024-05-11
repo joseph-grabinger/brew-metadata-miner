@@ -1,13 +1,10 @@
 package miner
 
 import (
-	"bufio"
-	"os"
-	"path/filepath"
-
 	"main/config"
 	"main/miner/reader"
 	"main/miner/types"
+	"main/miner/writer"
 )
 
 type miner struct {
@@ -34,43 +31,5 @@ func (m *miner) ReadFormulae() error {
 
 // WriteFormulae writes the formulae to the output file.
 func (m *miner) WriteFormulae() error {
-	path := filepath.Join(m.config.OutputDir, "deps-brew.tsv")
-	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-	// Close file on function exit and check its' returned error.
-	defer func() error {
-		if err := file.Close(); err != nil {
-			return err
-		}
-		return nil
-	}()
-
-	writer := bufio.NewWriter(file)
-	defer writer.Flush()
-
-	for _, formula := range m.formulae {
-		// Write package line.
-		line := formula.FormatPackageLine()
-		_, err := writer.WriteString(line)
-		if err != nil {
-			return err
-		}
-
-		// Write dependency lines.
-		for _, dep := range formula.Dependencies {
-			f := m.formulae[dep.Name]
-			if f == nil {
-				panic("Dependency " + dep.Name + " not found in formula " + formula.Name)
-			}
-
-			line := f.FormatDependencyLine(dep)
-			_, err := writer.WriteString(line)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
+	return writer.WriteFormulae(m.config.OutputDir, m.formulae)
 }
