@@ -44,8 +44,8 @@ func cleanURLSequence(sequence []string) *types.Stable {
 
 	// Initialize skips for resources and patches.
 	skips := skips{
-		{begin: stableResourcePattern, end: endPattern(4)},
-		{begin: stablePatchPattern, end: endPattern(4)},
+		{begin: blockResourcePattern, end: endPattern(4)},
+		{begin: blockPatchPattern, end: endPattern(4)},
 	}
 
 	// Check for dependencies.

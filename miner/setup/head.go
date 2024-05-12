@@ -2,7 +2,6 @@ package setup
 
 import (
 	"regexp"
-	"slices"
 
 	"main/miner/types"
 )
@@ -13,35 +12,27 @@ func cleanHeadSequence(sequence []string) *types.Head {
 		return &types.Head{URL: sequence[0]}
 	}
 
-	head := &types.Head{Dependencies: make([]*types.Dependency, 0)}
+	head := &types.Head{}
+	var index int
 	for i := range sequence {
 		// Check for the URL.
 		regex := regexp.MustCompile(headBlockURLPattern)
 		matches := regex.FindStringSubmatch(sequence[i])
 		if len(matches) >= 2 {
 			head.URL = matches[1]
+			index = i
+			break
 		}
-
-		// TODO use dep_utils.go to clean dependencies OR remove them entirely.
-		// Check for dependencies.
-		regex = regexp.MustCompile(dependencyKeywordPattern)
-		matches = regex.FindStringSubmatch(sequence[i])
-		if len(matches) < 2 {
-			continue
-		}
-
-		dep := &types.Dependency{Name: matches[1]}
-
-		// Check for the dependency type.
-		regex = regexp.MustCompile(dependencyTypePattern)
-		typeMatches := regex.FindStringSubmatch(sequence[i])
-		if len(typeMatches) >= 2 {
-			dep.DepType = slices.DeleteFunc(typeMatches[1:], func(s string) bool {
-				return s == ""
-			})
-		}
-		head.Dependencies = append(head.Dependencies, dep)
 	}
+
+	// Initialize skips for resources and patches.
+	skips := skips{
+		{begin: blockResourcePattern, end: endPattern(4)},
+		{begin: blockPatchPattern, end: endPattern(4)},
+	}
+
+	deps := cleanDepSequence(sequence[index+1:], skips, 1)
+	head.Dependencies = deps.Lst
 	return head
 }
 

@@ -31,13 +31,13 @@ const (
 	// Further, an optional trailing comma is matched and captured.
 	stableUrlPattern = `^\s{2,}url\s+"([^"]+)"(,?)`
 
-	// stableResourcePattern matches four consecutive spaces,
+	// blockResourcePattern matches four consecutive spaces,
 	// followed by the literal string "resource".
-	stableResourcePattern = `^\s{4}resource\s+`
+	blockResourcePattern = `^\s{4}resource\s+`
 
-	// stablePatchPattern matches four or more consecutive spaces,
+	// blockPatchPattern matches four or more consecutive spaces,
 	// followed by the literal string "patch".
-	stablePatchPattern = `^\s{4,}patch\s+`
+	blockPatchPattern = `^\s{4,}patch\s+`
 
 	// tagPattern matches four or more consecutive spaces,
 	// followed by the literal string "tag:",
