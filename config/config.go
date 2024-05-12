@@ -27,8 +27,18 @@ type Config struct {
 		Clone bool `yaml:"clone"`
 	} `yaml:"core_repo"`
 
-	// The maximum number of workers to use.
+	Reader ReaderConfig `yaml:"reader"`
+}
+
+type ReaderConfig struct {
+	// The maximum number of concurrent workers to use.
 	MaxWorkers int `yaml:"max_workers"`
+
+	// A boolean flag indicating whether the repo URL should be derived if no head is specified.
+	DeriveRepo bool `yaml:"derive_repo"`
+
+	// The license to use when no license is specified.
+	FallbackLicense string `yaml:"fallback_license"`
 }
 
 // Print prints the configuration to the console.
@@ -103,7 +113,7 @@ func (c *Config) Validate() error {
 	}
 
 	// verify the number of workers is valid
-	if c.MaxWorkers <= 0 {
+	if c.Reader.MaxWorkers <= 0 {
 		return ErrInvalidMaxWorkers
 	}
 

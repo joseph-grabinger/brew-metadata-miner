@@ -19,7 +19,7 @@ import (
 func TestReadFormulae(t *testing.T) {
 	config := &config.Config{}
 	config.CoreRepo.Dir = "../tmp/homebrew-core"
-	config.MaxWorkers = 10
+	config.Reader.MaxWorkers = 10
 
 	parser := NewMiner(config)
 
@@ -48,7 +48,7 @@ func TestReadFormulae(t *testing.T) {
 
 		// Assert licenses are equal.
 		if apiFormula["license"] == nil {
-			assert.EqualValues(t, "pseudo", formula.License, "expected: pseudo license of %s, got: %s", name, formula.License)
+			assert.EqualValues(t, "", formula.License, "expected: pseudo license of %s, got: %s", name, formula.License)
 		} else {
 			assert.Equal(t, apiFormula["license"], formula.License, "expected: %s as license of %s, got: %s", apiFormula["license"], name, formula.License)
 		}

@@ -4,5 +4,8 @@ core_repo:
   url: https://github.com/Homebrew/homebrew-core.git
   branch: master
   dir: ./tmp/homebrew-core
-  clone: false
-max_workers: 10
+  clone: true
+reader:
+  max_workers: 10
+  derive_repo: true
+  fallback_license: pseudo

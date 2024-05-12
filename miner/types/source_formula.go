@@ -36,15 +36,10 @@ func (sf *SourceFormula) String() string {
 	return fmt.Sprintf("%s\nHomepage: %s\nStable: %s\nMirror: %s\nLicense: %s\nDependencies: %v\nHead: %v", sf.Name, sf.Homepage, sf.Stable, sf.Mirror, sf.License, sf.Dependencies, sf.Head)
 }
 
-// extractRepoURL returns the repository URL of the formula.
+// deriveRepoURL attempts to derive the repository URL of the formula.
 // It therfore inspects the URL, mirror and homepage fields of the formula.
-func (sf *SourceFormula) extractRepoURL() string {
+func (sf *SourceFormula) deriveRepoURL() string {
 	var repoURL string
-
-	// Use head if it exists.
-	if sf.Head != nil {
-		return sf.Head.URL
-	}
 
 	// Check homepage for known repository hosts.
 	if m, repoURL := matchesKnownGitRepoHost(sf.Homepage); m {
@@ -74,10 +69,8 @@ func (sf *SourceFormula) extractRepoURL() string {
 	return ""
 }
 
+// formatLicense formats the license to a boolean expression in natural language.
 func (sf *SourceFormula) formatLicense() string {
-	if sf.License == "" {
-		return "pseudo"
-	}
 
 	// Remove spaces and quotes.
 	r := strings.NewReplacer(

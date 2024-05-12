@@ -24,7 +24,7 @@ func NewMiner(config *config.Config) *miner {
 
 // ReadFormaulas reads all formulae from the core repository into the formulas map.
 func (m *miner) ReadFormulae() error {
-	f, err := reader.ReadFormulae(m.config.CoreRepo.Dir, m.config.MaxWorkers)
+	f, err := reader.ReadFormulae(m.config.CoreRepo.Dir, m.config.Reader)
 	m.formulae = f
 	return err
 }

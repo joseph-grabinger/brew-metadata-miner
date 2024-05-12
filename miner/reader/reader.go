@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 
+	"main/config"
 	"main/miner/parser"
 	"main/miner/setup"
 	"main/miner/types"
@@ -31,7 +32,7 @@ func (p *reader) addFormula(formula *types.Formula) {
 // ReadFormulae reads all formulae from the core repository in parallel
 // using the given number of workers. It returns a map of formulae where
 // the key is the name of the formula and the first encountered error.
-func ReadFormulae(coreRepoPath string, maxWorkers int) (map[string]*types.Formula, error) {
+func ReadFormulae(coreRepoPath string, readerConfig config.ReaderConfig) (map[string]*types.Formula, error) {
 	// Create a new reader.
 	r := &reader{
 		formulae: make(map[string]*types.Formula),
@@ -64,7 +65,7 @@ func ReadFormulae(coreRepoPath string, maxWorkers int) (map[string]*types.Formul
 	var wg sync.WaitGroup
 
 	// Create a worker pool to process the files concurrently.
-	for i := 0; i < maxWorkers; i++ {
+	for i := 0; i < readerConfig.MaxWorkers; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -73,7 +74,7 @@ func ReadFormulae(coreRepoPath string, maxWorkers int) (map[string]*types.Formul
 				case <-ctx.Done():
 					return
 				default:
-					if err := r.processFile(path); err != nil {
+					if err := r.processFile(path, readerConfig.FallbackLicense, readerConfig.DeriveRepo); err != nil {
 						cancel()
 						errCh <- err
 						return
@@ -105,7 +106,7 @@ func ReadFormulae(coreRepoPath string, maxWorkers int) (map[string]*types.Formul
 	return r.formulae, nil
 }
 
-func (p *reader) processFile(path string) error {
+func (p *reader) processFile(path string, fallbackLicense string, deriveRepo bool) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err
@@ -119,7 +120,7 @@ func (p *reader) processFile(path string) error {
 		return err
 	}
 
-	formula := types.FromSourceFormula(sourceFormula)
+	formula := types.FromSourceFormula(sourceFormula, fallbackLicense, deriveRepo)
 	p.addFormula(formula)
 
 	log.Println("Successfully parsed formula:", formula)

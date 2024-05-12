@@ -37,10 +37,6 @@ var formatLicenseTests = []struct {
 		expected: "MIT",
 	},
 	{
-		input:    ``,
-		expected: "pseudo",
-	},
-	{
 		input:    `"LGPL-2.1-only" => { with: "OCaml-LGPL-linking-exception" }`,
 		expected: "LGPL-2.1-only with OCaml-LGPL-linking-exception",
 	},

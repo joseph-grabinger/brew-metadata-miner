@@ -48,11 +48,16 @@ func (f *Formula) FormatDependencyLine(dep *Dependency) string {
 
 // fromSourceFormula creates a formula from a source formula and evaluates the reopURL.
 // It returns a pointer to the newly created formula.
-func FromSourceFormula(sf *SourceFormula) *Formula {
+func FromSourceFormula(sf *SourceFormula, fallbackLicense string, deriveRepo bool) *Formula {
 	f := &Formula{
 		Name:       sf.Name,
-		License:    sf.formatLicense(),
 		ArchiveURL: sf.Stable.URL,
+	}
+
+	if sf.License == "" {
+		f.License = fallbackLicense
+	} else {
+		f.License = sf.formatLicense()
 	}
 
 	if sf.Dependencies != nil {
@@ -75,7 +80,13 @@ func FromSourceFormula(sf *SourceFormula) *Formula {
 		}
 	}
 
-	f.RepoURL = sf.extractRepoURL()
+	if sf.Head == nil {
+		if deriveRepo {
+			f.RepoURL = sf.deriveRepoURL()
+		}
+	} else {
+		f.RepoURL = sf.Head.URL
+	}
 
 	return f
 }
