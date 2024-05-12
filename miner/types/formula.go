@@ -41,7 +41,9 @@ func (f *Formula) FormatPackageLine() string {
 func (f *Formula) FormatDependencyLine(dep *Dependency) string {
 	depType := ""
 	if len(dep.DepType) > 0 {
-		depType = strings.Join(dep.DepType, ",")
+		depType = strings.Join(dep.DepType, ", ")
+	} else {
+		depType = "runtime"
 	}
 	return fmt.Sprintf("1\t\"brew\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\n", dep.Name, f.License, depType, dep.Restriction)
 }
